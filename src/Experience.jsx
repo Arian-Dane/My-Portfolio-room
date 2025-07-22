@@ -1,10 +1,29 @@
 import * as THREE from 'three'
 import { useGLTF, useTexture, OrbitControls, useAnimations} from '@react-three/drei'
-import { useEffect,useState } from 'react'  
+import { useEffect,useState,useRef, useMemo } from 'react'  
 import {gsap} from 'gsap'
 
 export default function Experience() {
     const room = useGLTF('/model/room.glb')
+    
+    //state
+    const[githubHitbox, setGithubHitbox] = useState(null)
+    const[linkedInHitbox,setLinkedInHitbox] = useState(null)
+    const[emailHitbox,setEmailHitbox] = useState(null)
+    const [aboutMeHitbox, setAboutMeHitbox] = useState(null)
+    const [contactMeHitbox, setContactMeHitbox] = useState(null)
+    const [experienceHitbox, setExperienceHitbox] = useState(null)
+
+    //
+    const githubMeshRef = useRef()
+    const linkedInMeshRef = useRef()
+    const emailMeshRef = useRef()
+    const aboutMeMeshRef = useRef()
+    const contactMeMeshRef = useRef()
+    const experienceMeshRef = useRef()
+    
+
+    //animation instance
     const animations = useAnimations(room.animations, room.scene)
 
 
@@ -12,12 +31,14 @@ export default function Experience() {
             const chair= animations.actions.Chair_Spin
             const cat= animations.actions.catt
             const vacuum= animations.actions.Vac_Animation
-            chair.play().timeScale=0.8
+            chair.play().timeScale=0.9
             cat.play().timeScale = 1.5
             vacuum.play().timeScale = 0.5 
             
         }, [])
     
+    
+
     
     const assets = {
         bake1: useTexture('/model/bake1.webp'),
@@ -27,8 +48,7 @@ export default function Experience() {
         bake5: useTexture('/model/bake5.webp'),
         bake6: useTexture('/model/bake6.webp'),
         bake7: useTexture('/model/bake7.webp'),
-        
-    }
+        }
 
     useEffect(() => {
         // Setup videos
@@ -77,7 +97,7 @@ export default function Experience() {
 
         
 
-        // Single traverse for all materials
+        // Single traverse for target objects
         room.scene.traverse((child) => {
             if(child.isMesh) {
                 // Handle video screens
@@ -88,21 +108,71 @@ export default function Experience() {
                         
                     })
                 }
-                else if(child.name.includes('TV_Screen')) {
+                if(child.name.includes('TV_Screen')) {
                     child.material = new THREE.MeshBasicMaterial({
                         map: arcaneTexture,
                         toneMapped: false,
             
                     })
                 }
-                else if(child.name.includes('Interact')) {
+                if(child.name.includes('Interact')) {
                     child.visible = false
                 }
-                else if(child.name.includes('Yellow')) {
+                if(child.name.includes('Yellow')) {
                     child.material = new THREE.MeshStandardMaterial({
                         color: '#9F9360',
                     })
                 }
+                if(child.name.includes('Github_Cube_Interact')) {
+                    setGithubHitbox(child)
+                }
+                if(child.name.includes('Github_bake2')){
+                   child.visible = false
+                    githubMeshRef.current = child 
+                }
+                
+                if(child.name.includes('Indeed_Cube_Interact')) {
+                    
+                    setLinkedInHitbox(child)
+                }
+                if(child.name.includes('Indeed_bake2')) {
+                    
+                    child.visible = false
+                    linkedInMeshRef.current = child
+                }
+                if(child.name.includes('Email_Cube_Interact')) {
+                    
+                    setEmailHitbox(child)
+                }
+                if(child.name.includes('Email_bake2')) {
+                    child.visible = false
+                    emailMeshRef.current = child
+                    
+                }
+                if(child.name.includes('About_Me_Cube_Interact')){
+                    setAboutMeHitbox(child)
+                }
+                if(child.name.includes('About_me_Sphere_Glow')){
+                    child.visible = false
+                    aboutMeMeshRef.current = child
+                }
+                if(child.name.includes('Contact_Me_Cube_Interact')){
+                    setContactMeHitbox(child)
+                }
+                if(child.name.includes('Contact_me_Sphere_Glow')){
+                    child.visible = false
+                    contactMeMeshRef.current = child
+                    
+                }
+                if(child.name.includes('Experiance_Cube_Interact')){
+                    setExperienceHitbox(child)
+                }
+                if(child.name.includes('experiance_Sphere_Glow')){
+                    child.visible = false
+                    experienceMeshRef.current = child
+                }
+                
+
                 
                 
                 // Handle baked materials
@@ -121,25 +191,27 @@ export default function Experience() {
         const light = new THREE.PointLight(0xffffff, 700)
         room.scene.add(light)
         light.position.set(20, 10, 10)
-        console.log(room)
+
+        room.scene.getObjectByName('Vacuum_Complete_bake3').scale.set(0.95, 0.95, 0.95)
+        
 
    
     }, [room, assets])
-    room.scene.getObjectByName('Vacuum_Complete_bake3').scale.set(0.95, 0.95, 0.95)
 
-    // Handle hover effect
-        const[hovered, setHovered] = useState(false)
+    const pointerEnter= () => {
+        document.body.style.cursor = 'pointer'
+        console.log('better enter')
+    }
 
-        const handleHover = () => {
+    const pointerOut= () => {
+        document.body.style.cursor = 'default'
+        console.log('better out')
+    }
 
-            setHovered(!hovered)
-            gsap.to('.hover', {
-                scale: 1.2,
-                duration: 0.3,
-                ease: 'power2.inOut'
-            })
-        }
-
+    console.log(room)
+    
+    
+    
 
     
 
@@ -147,6 +219,160 @@ export default function Experience() {
         <>
             <OrbitControls minDistance={1} maxDistance={20000} />
             <primitive object={room.scene} />
+
+            {githubHitbox && (
+                <mesh
+                    geometry={githubHitbox.geometry}
+                    position={githubHitbox.position}
+                    scale={githubHitbox.scale}
+                    visible={false}
+
+                    onPointerEnter={pointerEnter}
+                    onPointerLeave= {pointerOut}
+                >       
+            
+            </mesh>
+            )}
+
+            {githubMeshRef.current && (
+                <mesh
+                    geometry={githubMeshRef.current.geometry}
+                    position={githubMeshRef.current.position}
+                    scale={githubMeshRef.current.scale}
+                    rotation={githubMeshRef.current.rotation}
+                    material={githubMeshRef.current.material}
+
+                    
+                >       
+            
+            </mesh>
+            )}
+
+            {linkedInHitbox && (
+                <mesh
+                    geometry={linkedInHitbox.geometry}
+                    position={linkedInHitbox.position}
+                    scale={linkedInHitbox.scale}
+                    visible = {false}
+
+                    onPointerEnter={pointerEnter}
+                    onPointerLeave= {pointerOut}
+
+                >
+                
+                </mesh>
+            )}
+            {linkedInMeshRef.current && (
+                <mesh
+                    geometry={linkedInMeshRef.current.geometry}
+                    position={linkedInMeshRef.current.position}
+                    scale={linkedInMeshRef.current.scale}
+                    rotation= {linkedInMeshRef.current.rotation}
+                    material={linkedInMeshRef.current.material}
+                    
+                    
+                >       
+            
+            </mesh>
+            )}
+
+            {emailHitbox && (
+                <mesh
+                    geometry={emailHitbox.geometry}
+                    position={emailHitbox.position}
+                    scale={emailHitbox.scale}
+                    visible={false}
+
+                    onPointerEnter={pointerEnter}
+                    onPointerLeave={pointerOut}
+                >
+                </mesh>
+            )}
+
+            {emailMeshRef.current && (
+                <mesh
+                    
+                    
+                    geometry={emailMeshRef.current.geometry}
+                    position={emailMeshRef.current.position}
+                    scale={emailMeshRef.current.scale}
+                    rotation={emailMeshRef.current.rotation}
+                    material={emailMeshRef.current.material}
+                    
+                    
+                >
+                </mesh>
+            )}
+
+
+            {aboutMeHitbox && (
+                <mesh
+                    geometry={aboutMeHitbox.geometry}
+                    position={aboutMeHitbox.position}
+                    scale={aboutMeHitbox.scale}
+                    visible={false}
+
+                    onPointerEnter={pointerEnter}
+                    onPointerLeave={pointerOut}
+                >
+                </mesh>
+            )}
+            
+            {aboutMeMeshRef.current && (
+                <mesh
+                    geometry={aboutMeMeshRef.current.geometry}
+                    position={aboutMeMeshRef.current.position}
+                    scale={aboutMeMeshRef.current.scale}
+                    
+                >
+                </mesh>
+            )}
+
+            {contactMeHitbox && (
+                <mesh
+                    geometry={contactMeHitbox.geometry}
+                    position={contactMeHitbox.position}
+                    scale={contactMeHitbox.scale}
+                    visible={false}
+
+                    onPointerEnter={pointerEnter}
+                    onPointerLeave={pointerOut}
+                >
+                </mesh>
+            )}
+
+            {contactMeMeshRef.current && (
+                <mesh
+                    geometry={contactMeMeshRef.current.geometry}
+                    position={contactMeMeshRef.current.position}
+                    scale={contactMeMeshRef.current.scale}
+                    material={contactMeMeshRef.current.material}
+                >
+                </mesh>
+            )}
+
+            {experienceHitbox && (
+                <mesh
+                    geometry={experienceHitbox.geometry}
+                    position={experienceHitbox.position}
+                    scale={experienceHitbox.scale}
+                    visible={false}
+
+                    onPointerEnter={pointerEnter}
+                    onPointerLeave={pointerOut}
+                >
+                </mesh>
+            )}
+            {experienceMeshRef.current && (
+                <mesh
+                    geometry={experienceMeshRef.current.geometry}
+                    position={experienceMeshRef.current.position}
+                    scale={experienceMeshRef.current.scale}
+                    material={experienceMeshRef.current.material}
+                >
+                </mesh>
+            )}
+
             
         </>
     )
