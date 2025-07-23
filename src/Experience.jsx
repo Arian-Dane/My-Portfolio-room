@@ -1,7 +1,7 @@
 import * as THREE from 'three'
 import { useGLTF, useTexture, OrbitControls, useAnimations} from '@react-three/drei'
 import { useEffect,useState,useRef, useMemo } from 'react'  
-import {gsap} from 'gsap'
+import HoverAnimations from './HoverAnimations.jsx'
 
 export default function Experience() {
     const room = useGLTF('/model/room.glb')
@@ -14,7 +14,7 @@ export default function Experience() {
     const [contactMeHitbox, setContactMeHitbox] = useState(null)
     const [experienceHitbox, setExperienceHitbox] = useState(null)
 
-    //
+    //refs
     const githubMeshRef = useRef()
     const linkedInMeshRef = useRef()
     const emailMeshRef = useRef()
@@ -48,7 +48,7 @@ export default function Experience() {
         bake5: useTexture('/model/bake5.webp'),
         bake6: useTexture('/model/bake6.webp'),
         bake7: useTexture('/model/bake7.webp'),
-        }
+    }
 
     useEffect(() => {
         // Setup videos
@@ -198,183 +198,31 @@ export default function Experience() {
    
     }, [room, assets])
 
-    const pointerEnter= () => {
-        document.body.style.cursor = 'pointer'
-        console.log('better enter')
-    }
-
-    const pointerOut= () => {
-        document.body.style.cursor = 'default'
-        console.log('better out')
-    }
-
     console.log(room)
-    
-    
-    
-
-    
 
     return (
         <>
             <OrbitControls minDistance={1} maxDistance={20000} />
             <primitive object={room.scene} />
 
-            {githubHitbox && (
-                <mesh
-                    geometry={githubHitbox.geometry}
-                    position={githubHitbox.position}
-                    scale={githubHitbox.scale}
-                    visible={false}
-
-                    onPointerEnter={pointerEnter}
-                    onPointerLeave= {pointerOut}
-                >       
-            
-            </mesh>
-            )}
-
-            {githubMeshRef.current && (
-                <mesh
-                    geometry={githubMeshRef.current.geometry}
-                    position={githubMeshRef.current.position}
-                    scale={githubMeshRef.current.scale}
-                    rotation={githubMeshRef.current.rotation}
-                    material={githubMeshRef.current.material}
-
-                    
-                >       
-            
-            </mesh>
-            )}
-
-            {linkedInHitbox && (
-                <mesh
-                    geometry={linkedInHitbox.geometry}
-                    position={linkedInHitbox.position}
-                    scale={linkedInHitbox.scale}
-                    visible = {false}
-
-                    onPointerEnter={pointerEnter}
-                    onPointerLeave= {pointerOut}
-
-                >
-                
-                </mesh>
-            )}
-            {linkedInMeshRef.current && (
-                <mesh
-                    geometry={linkedInMeshRef.current.geometry}
-                    position={linkedInMeshRef.current.position}
-                    scale={linkedInMeshRef.current.scale}
-                    rotation= {linkedInMeshRef.current.rotation}
-                    material={linkedInMeshRef.current.material}
-                    
-                    
-                >       
-            
-            </mesh>
-            )}
-
-            {emailHitbox && (
-                <mesh
-                    geometry={emailHitbox.geometry}
-                    position={emailHitbox.position}
-                    scale={emailHitbox.scale}
-                    visible={false}
-
-                    onPointerEnter={pointerEnter}
-                    onPointerLeave={pointerOut}
-                >
-                </mesh>
-            )}
-
-            {emailMeshRef.current && (
-                <mesh
-                    
-                    
-                    geometry={emailMeshRef.current.geometry}
-                    position={emailMeshRef.current.position}
-                    scale={emailMeshRef.current.scale}
-                    rotation={emailMeshRef.current.rotation}
-                    material={emailMeshRef.current.material}
-                    
-                    
-                >
-                </mesh>
-            )}
-
-
-            {aboutMeHitbox && (
-                <mesh
-                    geometry={aboutMeHitbox.geometry}
-                    position={aboutMeHitbox.position}
-                    scale={aboutMeHitbox.scale}
-                    visible={false}
-
-                    onPointerEnter={pointerEnter}
-                    onPointerLeave={pointerOut}
-                >
-                </mesh>
-            )}
-            
-            {aboutMeMeshRef.current && (
-                <mesh
-                    geometry={aboutMeMeshRef.current.geometry}
-                    position={aboutMeMeshRef.current.position}
-                    scale={aboutMeMeshRef.current.scale}
-                    
-                >
-                </mesh>
-            )}
-
-            {contactMeHitbox && (
-                <mesh
-                    geometry={contactMeHitbox.geometry}
-                    position={contactMeHitbox.position}
-                    scale={contactMeHitbox.scale}
-                    visible={false}
-
-                    onPointerEnter={pointerEnter}
-                    onPointerLeave={pointerOut}
-                >
-                </mesh>
-            )}
-
-            {contactMeMeshRef.current && (
-                <mesh
-                    geometry={contactMeMeshRef.current.geometry}
-                    position={contactMeMeshRef.current.position}
-                    scale={contactMeMeshRef.current.scale}
-                    material={contactMeMeshRef.current.material}
-                >
-                </mesh>
-            )}
-
-            {experienceHitbox && (
-                <mesh
-                    geometry={experienceHitbox.geometry}
-                    position={experienceHitbox.position}
-                    scale={experienceHitbox.scale}
-                    visible={false}
-
-                    onPointerEnter={pointerEnter}
-                    onPointerLeave={pointerOut}
-                >
-                </mesh>
-            )}
-            {experienceMeshRef.current && (
-                <mesh
-                    geometry={experienceMeshRef.current.geometry}
-                    position={experienceMeshRef.current.position}
-                    scale={experienceMeshRef.current.scale}
-                    material={experienceMeshRef.current.material}
-                >
-                </mesh>
-            )}
-
-            
+            <HoverAnimations 
+                Hitboxes={{
+                    githubHitbox,
+                    linkedInHitbox,
+                    emailHitbox,
+                    aboutMeHitbox,
+                    contactMeHitbox,
+                    experienceHitbox,
+                }}
+                Meshes={{
+                    githubMeshRef,
+                    linkedInMeshRef,
+                    emailMeshRef,
+                    aboutMeMeshRef,
+                    contactMeMeshRef,
+                    experienceMeshRef,
+                }}
+            />
         </>
     )
 }
-
