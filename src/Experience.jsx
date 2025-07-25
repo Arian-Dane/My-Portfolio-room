@@ -1,11 +1,15 @@
 import * as THREE from 'three'
 import { useGLTF, useTexture, OrbitControls, useAnimations} from '@react-three/drei'
-import { useEffect,useState,useRef, useMemo } from 'react'  
+import { useEffect,useState,useRef } from 'react' 
+import { useThree,useFrame } from '@react-three/fiber' 
 import HoverAnimations from './HoverAnimations.jsx'
+
+
 
 export default function Experience() {
     const room = useGLTF('/model/room.glb')
-    
+    //const { camera } = useThree()
+
     //state
     const[githubHitbox, setGithubHitbox] = useState(null)
     const[linkedInHitbox,setLinkedInHitbox] = useState(null)
@@ -190,7 +194,7 @@ export default function Experience() {
         // Add point light
         const light = new THREE.PointLight(0xffffff, 700)
         room.scene.add(light)
-        light.position.set(20, 10, 10)
+        light.position.set(20, 10, -30)
 
         room.scene.getObjectByName('Vacuum_Complete_bake3').scale.set(0.95, 0.95, 0.95)
         
@@ -198,11 +202,20 @@ export default function Experience() {
    
     }, [room, assets])
 
-    console.log(room)
+    // useFrame(() => {
+    //     console.log('Camera position:', camera.position)
+    //     console.log('Rotation (degrees):', {
+    //         x: THREE.MathUtils.radToDeg(camera.rotation.x).toFixed(2),
+    //         y: THREE.MathUtils.radToDeg(camera.rotation.y).toFixed(2),
+    //         z: THREE.MathUtils.radToDeg(camera.rotation.z).toFixed(2),
+    //     })
+    // })
 
+     
+    
     return (
         <>
-            <OrbitControls minDistance={1} maxDistance={20000} />
+            <OrbitControls target={[0,11,0]} minDistance={1} maxDistance={20000} />
             <primitive object={room.scene} />
 
             <HoverAnimations 
