@@ -1,10 +1,8 @@
 import * as THREE from 'three'
-import { useGLTF, useTexture, OrbitControls, useAnimations} from '@react-three/drei'
+import { useGLTF, useTexture, OrbitControls, useAnimations,} from '@react-three/drei'
 import { useEffect,useState,useRef } from 'react' 
 import { useThree,useFrame } from '@react-three/fiber' 
 import HoverAnimations from './HoverAnimations.jsx'
-
-
 
 export default function Experience() {
     const room = useGLTF('/model/room.glb')
@@ -17,7 +15,7 @@ export default function Experience() {
     const [aboutMeHitbox, setAboutMeHitbox] = useState(null)
     const [contactMeHitbox, setContactMeHitbox] = useState(null)
     const [experienceHitbox, setExperienceHitbox] = useState(null)
-
+    
     //refs
     const githubMeshRef = useRef()
     const linkedInMeshRef = useRef()
@@ -26,7 +24,6 @@ export default function Experience() {
     const contactMeMeshRef = useRef()
     const experienceMeshRef = useRef()
     
-
     //animation instance
     const animations = useAnimations(room.animations, room.scene)
 
@@ -54,7 +51,10 @@ export default function Experience() {
         bake7: useTexture('/model/bake7.webp'),
     }
 
+    
+
     useEffect(() => {
+        if (!room || !room.scene) return
         // Setup videos
         const video1 = document.createElement('video')
         video1.src = '/model/cyberpunk.mp4'
@@ -214,7 +214,7 @@ export default function Experience() {
      
     
     return (
-        <>
+        <>  
             <OrbitControls target={[0,11,0]} minDistance={1} maxDistance={20000} />
             <primitive object={room.scene} />
 
@@ -227,6 +227,7 @@ export default function Experience() {
                     contactMeHitbox,
                     experienceHitbox,
                 }}
+
                 Meshes={{
                     githubMeshRef,
                     linkedInMeshRef,
