@@ -1,5 +1,6 @@
 import { useProgress } from "@react-three/drei"
 import './Loader.css'
+import "./index.css"
 import { useEffect } from 'react'
 
 export default function Loader({ onComplete }) {
@@ -9,7 +10,7 @@ export default function Loader({ onComplete }) {
     if (progress === 100) {
       setTimeout(() => {
         onComplete()
-      }, 1000) // Small delay to show 100%
+      }, 2000) // Small delay to show 100%
     }
   }, [progress, onComplete])
   

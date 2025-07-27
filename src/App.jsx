@@ -13,6 +13,7 @@ function App() {
   return (
     <>
       <Canvas id='canvas'
+
         camera={{ position: [-58.30438164380116, 32.174307365034554, 22.54386735152263], near: 0.6, far: 1000, fov: 40 }}
         gl={{
           outputColorSpace: THREE.SRGBColorSpace,
@@ -24,13 +25,15 @@ function App() {
         </Suspense>
       </Canvas>
 
-      {/* Loader overlay - outside Canvas */}
-      {isLoading && <Loader onComplete={() => setIsLoading(false)} />}
+      {/* Loader overlay */}
+      {/*
+      {isLoading && <Loader onComplete={() => setIsLoading(false)} />}*/}
       
       {/* Start screen overlay */}
-      {!isLoading && !hasWokenUp && (
+      {/*{!isLoading && !hasWokenUp && (
         <StartScreen onWakeUp={() => setHasWokenUp(true)} />
-      )}
+      )}*/}
+      
     </>
   )
 }
