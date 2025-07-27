@@ -1,41 +1,45 @@
-import './App.css'
-import * as THREE from 'three'
+import { useState } from 'react'
 import { Canvas } from '@react-three/fiber'
-import Experience from './Experience.jsx'
-import StartScreen from "./StartingScreen.jsx"
-import { Suspense, useState } from 'react'
-import Loader from './Loader.jsx'
+import Experience from './Experience'
+import Loader from './Loader'
+import StartingScreen from './StartingScreen'
 
 function App() {
-  const [isLoading, setIsLoading] = useState(true)
-  const [hasWokenUp, setHasWokenUp] = useState(false)
-  
+  const [showLoader, setShowLoader] = useState(true)
+  const [showStartingScreen, setShowStartingScreen] = useState(false)
+  const [isExperienceVisible, setIsExperienceVisible] = useState(false)
+
+  // Handle loader completion
+  const handleLoaderComplete = () => {
+    setShowLoader(false)
+    setShowStartingScreen(true)
+  }
+
+  // Handle wake up button click
+  const handleWakeUp = () => {
+    setShowStartingScreen(false)
+    setIsExperienceVisible(true)
+  }
+
   return (
     <>
-      <Canvas id='canvas'
+      {/* Loader Screen */}
+      {showLoader && (
+        <Loader onComplete={handleLoaderComplete} />
+      )}
 
-        camera={{ position: [-58.30438164380116, 32.174307365034554, 22.54386735152263], near: 0.6, far: 1000, fov: 40 }}
-        gl={{
-          outputColorSpace: THREE.SRGBColorSpace,
-          toneMapping: THREE.NoToneMapping,
-          antialias: true 
-        }}>
-        <Suspense fallback={null}>
-          <Experience />
-        </Suspense>
+      {/* Starting Screen */}
+      {showStartingScreen && (
+        <StartingScreen onWakeUp={handleWakeUp} />
+      )}
+
+      {/* Three.js Canvas - Always mounted but Experience knows when to activate */}
+      <Canvas camera={{ position: [0, 15, 15], fov: 45 }}>
+        <Experience isVisible={isExperienceVisible} />
       </Canvas>
-
-      {/* Loader overlay */}
-      {/*
-      {isLoading && <Loader onComplete={() => setIsLoading(false)} />}*/}
-      
-      {/* Start screen overlay */}
-      {/*{!isLoading && !hasWokenUp && (
-        <StartScreen onWakeUp={() => setHasWokenUp(true)} />
-      )}*/}
-      
     </>
   )
 }
 
 export default App
+

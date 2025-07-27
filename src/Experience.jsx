@@ -4,7 +4,7 @@ import { useEffect,useState,useRef } from 'react'
 import { useThree,useFrame } from '@react-three/fiber' 
 import HoverAnimations from './HoverAnimations.jsx'
 
-export default function Experience() {
+export default function Experience({ isVisible = false }) {
     const room = useGLTF('/model/room.glb')
     //const { camera } = useThree()
 
@@ -27,16 +27,19 @@ export default function Experience() {
     //animation instance
     const animations = useAnimations(room.animations, room.scene)
 
-
-    useEffect (()=> {
-            const chair= animations.actions.Chair_Spin
-            const cat= animations.actions.catt
-            const vacuum= animations.actions.Vac_Animation
-            chair.play().timeScale=0.9
-            cat.play().timeScale = 1.5
-            vacuum.play().timeScale = 0.5 
+    // Only start animations when the experience is actually visible
+    useEffect(() => {
+        if (!isVisible) return // Don't start animations until visible!
+        
+        const chair = animations.actions.Chair_Spin
+        const cat = animations.actions.catt
+        const vacuum = animations.actions.Vac_Animation
+        
+        if (chair) chair.play().timeScale = 0.9
+        if (cat) cat.play().timeScale = 1.5
+        if (vacuum) vacuum.play().timeScale = 0.5 
             
-        }, [])
+    }, [isVisible, animations]) // Re-run when isVisible changes
     
     
 
@@ -54,7 +57,8 @@ export default function Experience() {
     
 
     useEffect(() => {
-        if (!room || !room.scene) return
+        if (!room || !room.scene || !isVisible) return // Wait until visible!
+        
         // Setup videos
         const video1 = document.createElement('video')
         video1.src = '/model/cyberpunk.mp4'
@@ -200,7 +204,7 @@ export default function Experience() {
         
 
    
-    }, [room, assets])
+    }, [room, assets, isVisible]) // Added isVisible dependency
 
     // useFrame(() => {
     //     console.log('Camera position:', camera.position)
@@ -218,25 +222,28 @@ export default function Experience() {
             <OrbitControls target={[0,11,0]} minDistance={1} maxDistance={20000} />
             <primitive object={room.scene} />
 
-            <HoverAnimations 
-                Hitboxes={{
-                    githubHitbox,
-                    linkedInHitbox,
-                    emailHitbox,
-                    aboutMeHitbox,
-                    contactMeHitbox,
-                    experienceHitbox,
-                }}
+            {/* Only render hover animations when visible */}
+            {isVisible && (
+                <HoverAnimations 
+                    Hitboxes={{
+                        githubHitbox,
+                        linkedInHitbox,
+                        emailHitbox,
+                        aboutMeHitbox,
+                        contactMeHitbox,
+                        experienceHitbox,
+                    }}
 
-                Meshes={{
-                    githubMeshRef,
-                    linkedInMeshRef,
-                    emailMeshRef,
-                    aboutMeMeshRef,
-                    contactMeMeshRef,
-                    experienceMeshRef,
-                }}
-            />
+                    Meshes={{
+                        githubMeshRef,
+                        linkedInMeshRef,
+                        emailMeshRef,
+                        aboutMeMeshRef,
+                        contactMeMeshRef,
+                        experienceMeshRef,
+                    }}
+                />
+            )}
         </>
     )
 }
