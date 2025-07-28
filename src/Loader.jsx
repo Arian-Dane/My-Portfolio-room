@@ -10,7 +10,7 @@ export default function Loader({ onComplete }) {
     if (progress === 100) {
       setTimeout(() => {
         onComplete()
-      }, 2000) // Small delay to show 100%
+      }, 1000) // Small delay to show 100%
     }
   }, [progress, onComplete])
   
