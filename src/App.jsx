@@ -3,6 +3,9 @@ import { Canvas } from '@react-three/fiber'
 import Experience from './Experience'
 import Loader from './Loader'
 import StartingScreen from './StartingScreen'
+import CollapsedSvg from './CollapsedSvg'
+import ExpandSvg from './ExpandSvg'
+
 
 function App() {
   const [showLoader, setShowLoader] = useState(true)
@@ -20,6 +23,8 @@ function App() {
     setIsExperienceVisible(true)
   }
 
+   
+
   return (
     <>
       {showLoader && (
@@ -30,17 +35,10 @@ function App() {
         <StartingScreen onWakeUp={handleWakeUp} />
       )}
 
-      {isExperienceVisible && (
-        <button
-          onClick={() => setIsCanvasMinimized(!isCanvasMinimized)}
-          className={`absolute z-30 px-4 py-2 bg-black transition-all duration-300 ${isCanvasMinimized ? 'top-4 left-4' : 'top-4 right-4'}`}
-        >
-          {isCanvasMinimized ? 'Expand' : 'Minimize'}
-        </button>
-      )}
+      
         {/*true: false*/}
       <div 
-        className="absolute bg-black border-2 border-white"
+        className="absolute bg-black"
         style={{
           top: isCanvasMinimized ? '16px' : '0px',
           right: isCanvasMinimized ? '16px' : '0px',
@@ -49,10 +47,20 @@ function App() {
           height: isCanvasMinimized ? '240px' : '100vh',
           transition: 'all 0.6s cubic-bezier(0.4, 0.0, 0.2, 1)',
           zIndex: isCanvasMinimized ? 20 : 1,
-          overflow: isCanvasMinimized ? 'visible':'visible'
+          overflow: isCanvasMinimized ? 'visible':'hidden'
           
         }}
       >
+
+        <div
+        onClick={() => setIsCanvasMinimized(!isCanvasMinimized)}
+        className={`absolute z-30 px-1 py-1 transition-transform duration-150 ease-linear ${
+          isCanvasMinimized ? 'top-1 right-1' : 'top-1 right-1'
+        } cursor-pointer hover:scale-110`}
+      >
+        {isCanvasMinimized ? <ExpandSvg /> : <CollapsedSvg />}
+      </div>
+        
         <Canvas 
           camera={{ position: [-63, 31, 11], fov: 45 }}
           style={{ width: '100%', height: '100%' }}
