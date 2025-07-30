@@ -1,0 +1,40 @@
+
+.mask {
+  background-color: #080818;
+  position: relative;
+  overflow: hidden;
+}
+
+.mask::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  background-color: #080818;
+  width: 70%;
+  clip-path: polygon(0% 0%, calc(100% - 40px) 0%, calc(100% - 20px) 100%, 0% 100%);
+}
+
+.mask::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 0;
+  height: 100%;
+  background-color: #ff00ff;
+  width: 30%;
+  clip-path: polygon(22px 0%, 100% 0%, 100% 100%, 2px 100%);
+}
+
+.custom-H2 {
+  font-stretch: ultra-condensed;
+}
+
+
+.shadow{
+  box-shadow:
+    0 0 0 1.5px rgba(0, 0, 0, 0.15),
+    0 6px 12px rgba(0, 0, 0, 0.25),
+    0 12px 24px rgba(0, 0, 0, 0.18);
+}
