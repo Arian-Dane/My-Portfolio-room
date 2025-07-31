@@ -20,6 +20,14 @@ body,
     box-sizing: border-box;
     margin: 0;
     padding: 0;
-    background-color: rgb(0, 0, 0);
+    background: #582688;
+    background: radial-gradient(circle, rgba(88, 38, 136, 1) 0%, rgba(0, 0, 0, 1) 100%);
 }
 
+/* pink gradient
+background: #E208E0;
+background: radial-gradient(circle, rgba(226, 8, 224, 1) 0%, rgba(0, 0, 0, 1) 100%);
+
+purple gradient
+background: #582688;
+background: radial-gradient(circle, rgba(88, 38, 136, 1) 0%, rgba(0, 0, 0, 1) 100%);*/

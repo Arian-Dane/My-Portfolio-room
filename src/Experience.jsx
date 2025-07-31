@@ -1,5 +1,7 @@
 import * as THREE from 'three'
 import { useGLTF, useTexture, OrbitControls, useAnimations,} from '@react-three/drei'
+import { EffectComposer, Bloom } from '@react-three/postprocessing'
+import { BlendFunction } from 'postprocessing'
 import { useEffect,useState,useRef } from 'react' 
 import { useThree,useFrame } from '@react-three/fiber' 
 import HoverAnimations from './HoverAnimations.jsx'
@@ -28,9 +30,10 @@ export default function Experience({ isVisible = false }) {
     //animation instance
     const animations = useAnimations(room.animations, room.scene)
 
-    // Only start animations when the experience is actually visible
+    
     useEffect(() => {
-        if (!isVisible) return // Don't start animations until visible!
+        // on render start animation
+        if (!isVisible) return 
         
         const chair = animations.actions.Chair_Spin
         const cat = animations.actions.catt
@@ -40,7 +43,7 @@ export default function Experience({ isVisible = false }) {
         if (cat) cat.play().timeScale = 1.5
         if (vacuum) vacuum.play().timeScale = 0.5 
             
-    }, [isVisible, animations]) // Re-run when isVisible changes
+    }, [isVisible, animations])
     
     
 
@@ -56,11 +59,11 @@ export default function Experience({ isVisible = false }) {
     }
 
     
-
+    // when rendered
     useEffect(() => {
         if (!room || !room.scene || !isVisible) return // Wait until visible!
         
-        // Setup videos
+        //videos setup
         const video1 = document.createElement('video')
         video1.src = '/model/cyberpunk.mp4'
         video1.crossOrigin = 'anonymous'
@@ -106,10 +109,10 @@ export default function Experience({ isVisible = false }) {
 
         
 
-        // Single traverse for target objects
+        // Single traverse target objects
         room.scene.traverse((child) => {
             if(child.isMesh) {
-                // Handle video screens
+                // Handling some video screens
                 if(child.name.includes('Cyberpunk_Monitor_Screen')) {
                     child.material = new THREE.MeshBasicMaterial({
                         map: cyberpunkTexture,
@@ -202,18 +205,27 @@ export default function Experience({ isVisible = false }) {
         
 
    
-    }, [room, assets, isVisible]) // Added isVisible dependency
+    }, [room, assets, ]) 
 
     
     return (
         <>  
+            <EffectComposer>
+                <Bloom 
+                blendFunction={BlendFunction.LIGHTEN} // Makes it additive
+                intensity={0.9} // Increase for more glow
+                kernelSize={5} // Blur size
+                luminanceThreshold={1} 
+                luminanceSmoothing={0.025}
+                />
+            </EffectComposer>
 
             <Lights room={{room}}/>
             <Camera/>
             <OrbitControls target={[0,11,0]} minDistance={1} maxDistance={20000} />
             <primitive object={room.scene} />
 
-            {/* Only render hover animations when visible */}
+            {/* render hoverables */}
             {isVisible && (
                 <HoverAnimations 
                     Hitboxes={{
