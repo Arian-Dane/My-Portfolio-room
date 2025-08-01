@@ -47,7 +47,7 @@ function App() {
           width: isCanvasMinimized ? '320px' : '100vw',
           height: isCanvasMinimized ? '240px' : '100vh',
           transition: 'all 0.6s cubic-bezier(0.4, 0.0, 0.2, 1)',
-          zIndex: isCanvasMinimized ? 20 : 1,
+          zIndex: isCanvasMinimized ? 50 : 1,
           overflow: isCanvasMinimized ? 'visible':'hidden',
           borderRadius: isCanvasMinimized ? "9px":"0px"
           

@@ -13,6 +13,22 @@
   }
 }
 
+@font-face {
+  font-family: 'SynthekKana';
+  src: url('/model/fonts/synthek_kana_ldr.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Ethnocentric';
+  src: url('/model/fonts/ethnocentric-rg.woff') format('woff');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+
 html,
 body,
 #root
@@ -21,8 +37,10 @@ body,
     margin: 0;
     padding: 0;
     background: #582688;
-    background: radial-gradient(circle, rgba(88, 38, 136, 1) 0%, rgba(0, 0, 0, 1) 100%);
+    background: radial-gradient(circle, rgba(88, 38, 136, 1) 0%, rgba(0, 0, 0, 1) 140%);
 }
+
+
 
 /* pink gradient
 background: #E208E0;
