@@ -15,7 +15,8 @@ export default {
       colors:{
         midnight: '#080818',
         neonPink:'#ff00ff',
-        deepPurple: '#582688'
+        deepPurple: '#160925',
+        mediumPurple: '#1b0b2f'
       }
     },
   },

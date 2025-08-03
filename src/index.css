@@ -40,7 +40,60 @@ body,
     background: radial-gradient(circle, rgba(88, 38, 136, 1) 0%, rgba(0, 0, 0, 1) 140%);
 }
 
+.cyberpunk-box {
+  color: white;
+  padding: 2rem;
+  
+  clip-path: polygon(0 0, 100% 0, 100% 92%, 90% 100%, 10% 100%, 0 92%);
+}
 
+.top-left-bottom-right-clip {
+  clip-path: polygon(15% 0, 100% 0, 100% 85%, 85% 100%, 0 100%, 0 15%);
+}
+.top-right-bottom-left-clip {
+  clip-path: polygon(0 0, 85% 0, 100% 15%, 100% 100%, 15% 100%, 0 85%);
+}
+
+
+.top-left-right-clip {
+  clip-path: polygon(15% 0,85% 0,100% 15%,100% 100%, 0% 100%, 0 15%);}       
+
+/* Custom Cyberpunk Scrollbar */
+::-webkit-scrollbar {
+  width: 12px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0a0a0a;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, #a020f0, #000000);
+  border-radius: 10px;
+  clip-path: polygon(0% 0%, 100% 10%, 100% 90%, 0% 100%);
+  box-shadow: inset 2px -2px 6px rgba(255, 0, 255, 0.3);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(135deg, #ff00ff, #3a0066);
+  box-shadow: inset 2px -2px 6px rgba(255, 0, 255, 0.6);
+}
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #a020f0 #0a0a0a;
+}
+
+.backgroundGradient{
+  background:linear-gradient(to bottom, rgba(255, 0, 255, 1) 0%, rgba(88, 38, 136, 1) 100%);
+}
+
+.pink-glow {
+  filter: drop-shadow(0 0 1px #ff00ff)
+          drop-shadow(0 0 1px #ff00ff)
+          drop-shadow(0 0 1px #ff00ff);
+}
 
 /* pink gradient
 background: #E208E0;

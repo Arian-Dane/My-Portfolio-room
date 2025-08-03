@@ -1,11 +1,12 @@
 import "./Webpage.css";
+import AboutMePage from "./AboutMePage.jsx"
 
 export default function Webpage() {
 
     
 
   return (
-    <div className="mx-1 overflow-hidden">
+    <div className=" overflow-hidden">
         
         <div className="flex mask z-10 justify-between w-screen h-[2.8rem] relative shadow overflow-hidden rounded-bl rounded-br font-ethnocentric">
             <div className="Navbar1 py-2 flex relative z-10  w-[60%] bg-midnight h-full items-center justify-between ">
@@ -47,7 +48,7 @@ export default function Webpage() {
             </div>
         </div>
 
-        <div className="w-full h-[50vh] overflow-hidden relative rounded-l shadow-2xl">
+        <div className="w-full h-[96vh] overflow-hidden relative rounded-l shadow-2xl">
             <video 
                 src="./model/veo3.mp4" 
                 className="w-full h-full object-cover brightness-[0.8] " 
@@ -56,7 +57,7 @@ export default function Webpage() {
                 loop
                 
             />
-            <div className="absolute mt-[4rem] top-0 left-0 text-white font-bold w-full h-full flex items-center flex-col font-ethnocentric">
+            <div className="absolute mt-[4rem] top-[10rem] left-0 text-white font-bold w-full h-full flex items-center flex-col font-ethnocentric">
                 {/* for gradient only */}
                 <div className="accentText w-auto h-auto ">
                     <h1 className="soft-shadow mx-auto font-bold text-[2rem] "> Arian Dane</h1>
@@ -72,6 +73,7 @@ export default function Webpage() {
             <div className="absolute inset-0 bg-pink-500/30 mix-blend-overlay pointer-events-none"/>
             
         </div>
+        <AboutMePage />
 
     </div>)
     
