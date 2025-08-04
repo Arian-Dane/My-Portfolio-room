@@ -210,7 +210,7 @@ export default function Experience({ isVisible = false }) {
     
     return (
         <>  
-            <EffectComposer>
+            {/* <EffectComposer>
                 <Bloom 
                 blendFunction={BlendFunction.LIGHTEN} // Makes it additive
                 intensity={0.9} // Increase for more glow
@@ -218,7 +218,7 @@ export default function Experience({ isVisible = false }) {
                 luminanceThreshold={1} 
                 luminanceSmoothing={0.025}
                 />
-            </EffectComposer>
+            </EffectComposer> */}
 
             <Lights room={{room}}/>
             <Camera/>

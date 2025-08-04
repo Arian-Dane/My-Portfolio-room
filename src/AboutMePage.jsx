@@ -8,7 +8,7 @@ export default function AboutMePage(){
                 
                 <div className=" h-[35vh] w-[25rem] mx-9 top-left-bottom-right-clip rounded-xl bg-white backgroundGradient text-center mt-[2.5rem]" >
                     
-                    <h1 className="font-extrabold text-[2rem]">Inventive</h1>
+                    <h1 className="font-extrabold text-[2rem] text-midnight">Inventive</h1>
                     <img className="mx-auto pink-glow w-[14rem] " src="./model/SVGs/abstract1.png" alt="rappit head outline" />
                     <p className="text-[0.8rem] mt-[0.1rem] ">
                         I’m Arian, a 23-year-old Computer Science student, freelancer, and full-stack developer.  
@@ -23,8 +23,13 @@ export default function AboutMePage(){
                     </p>
                 </div>
 
-                <div className="h-[35vh] w-[25rem] mx-9 top-left-clip top-right-bottom-left-clip rounded-xl bg-white backgroundGradient mt-[2.5rem]">
+                
 
+                <div className="h-[35vh] w-[25rem] mx-9 top-left-clip top-right-bottom-left-clip rounded-xl bg-white backgroundGradient mt-[2.5rem] text-center">
+                    <h1 className="font-extrabold text-[2rem]  ">Focused</h1>
+                    <img className="mx-auto pink-glow w-[14rem] h-[14rem] mt-[-1rem]" src="./model/SVGs/abstract2.png" alt="rappit head outline" />
+                    <p className="text-[0.8rem] text-center mt-[0.5rem] ">I’m Arian, a 23-year-old Computer Science student, freelancer, and full-stack developer.  
+                    </p>
                 </div>
 
             </div>
