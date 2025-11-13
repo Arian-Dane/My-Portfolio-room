@@ -22,7 +22,7 @@
   top: 0;
   height: 100%;
   background: #FF00FF;
-background: linear-gradient(120deg, rgba(255, 0, 255, 1) 27%, rgba(143, 9, 141, 1) 64%, rgba(125, 4, 123, 1) 86%, rgba(125, 4, 123, 1) 100%);
+  background: linear-gradient(120deg, rgba(255, 0, 255, 1) 27%, rgba(143, 9, 141, 1) 64%, rgba(125, 4, 123, 1) 86%, rgba(125, 4, 123, 1) 100%);
   width: 30%;
   clip-path: polygon(22px 0%, 100% 0%, 100% 100%, 2px 100%);
 }

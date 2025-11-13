@@ -10,6 +10,7 @@ import Lights from "./Lights.jsx"
 
 export default function Experience({ isVisible = false }) {
     const room = useGLTF('/model/room.glb')
+    const { scene, invalidate } = useThree()    
 
     //state
     const[githubHitbox, setGithubHitbox] = useState(null)
@@ -18,6 +19,15 @@ export default function Experience({ isVisible = false }) {
     const [aboutMeHitbox, setAboutMeHitbox] = useState(null)
     const [contactMeHitbox, setContactMeHitbox] = useState(null)
     const [experienceHitbox, setExperienceHitbox] = useState(null)
+    
+    // Force a re-render when canvas size changes
+    useEffect(() => {
+        const handleResize = () => {
+            invalidate()
+        }
+        window.addEventListener('resize', handleResize)
+        return () => window.removeEventListener('resize', handleResize)
+    }, [])
     
     //refs
     const githubMeshRef = useRef()
@@ -31,19 +41,26 @@ export default function Experience({ isVisible = false }) {
     const animations = useAnimations(room.animations, room.scene)
 
     
+    // Separate effect for animations
     useEffect(() => {
-        // on render start animation
-        if (!isVisible) return 
-        
         const chair = animations.actions.Chair_Spin
         const cat = animations.actions.catt
         const vacuum = animations.actions.Vac_Animation
         
-        if (chair) chair.play().timeScale = 0.9
-        if (cat) cat.play().timeScale = 1.5
-        if (vacuum) vacuum.play().timeScale = 0.5 
+        chair.play().timeScale = 0.9
+        cat.play().timeScale = 1.5
+        vacuum.play().timeScale = 0.5 
             
-    }, [isVisible, animations])
+        
+    }, [animations])
+
+    // Keep track of whether the component is mounted
+    const isMounted = useRef(true)
+    useEffect(() => {
+        return () => {
+            isMounted.current = false
+        }
+    }, [])
     
     
 
@@ -59,43 +76,125 @@ export default function Experience({ isVisible = false }) {
     }
 
     
-    // when rendered
+    // Setup scene and textures immediately
+    const videoRef1 = useRef()
+    const videoRef2 = useRef()
+    const videoTextureRef1 = useRef()
+    const videoTextureRef2 = useRef()
+
+    // Initialize hitboxes and meshes
     useEffect(() => {
-        if (!room || !room.scene || !isVisible) return // Wait until visible!
+        if (!room || !room.scene || !isMounted.current) return
+
+        // Create a cleanup function
+        const cleanup = () => {
+            if (isMounted.current) {
+                setGithubHitbox(null)
+                setLinkedInHitbox(null)
+                setEmailHitbox(null)
+                setAboutMeHitbox(null)
+                setContactMeHitbox(null)
+                setExperienceHitbox(null)
+            }
+        }
+
+        // Initialize all meshes and hitboxes
+        room.scene.traverse((child) => {
+            if(child.isMesh) {
+                if(child.name.includes('Github_Cube_Interact')) {
+                    setGithubHitbox(child)
+                }
+                if(child.name.includes('Github_bake2')){
+                    githubMeshRef.current = child 
+                }
+                if(child.name.includes('Indeed_Cube_Interact')) {
+                    setLinkedInHitbox(child)
+                }
+                if(child.name.includes('Indeed_bake2')) {
+                    linkedInMeshRef.current = child
+                }
+                if(child.name.includes('Email_Cube_Interact')) {
+                    setEmailHitbox(child)
+                }
+                if(child.name.includes('Email_bake2')) {
+                    emailMeshRef.current = child
+                }
+                if(child.name.includes('About_Me_Cube_Interact')){
+                    setAboutMeHitbox(child)
+                }
+                if(child.name.includes('About_me_Sphere_Glow')){
+                    aboutMeMeshRef.current = child
+                }
+                if(child.name.includes('Contact_Me_Cube_Interact')){
+                    setContactMeHitbox(child)
+                }
+                if(child.name.includes('Contact_me_Sphere_Glow')){
+                    contactMeMeshRef.current = child
+                }
+                if(child.name.includes('Experiance_Cube_Interact')){
+                    setExperienceHitbox(child)
+                }
+                if(child.name.includes('experiance_Sphere_Glow')){
+                    experienceMeshRef.current = child
+                }
+            }
+        })
+    }, [room.scene])
+
+    useEffect(() => {
+        if (!room || !room.scene) return
         
         //videos setup
-        const video1 = document.createElement('video')
-        video1.src = '/model/cyberpunk.mp4'
-        video1.crossOrigin = 'anonymous'
-        video1.loop = true
-        video1.muted = true
-        video1.playsInline = true
-        video1.autoplay = true
+        if (!videoRef1.current) {
+            videoRef1.current = document.createElement('video')
+            videoRef1.current.src = '/model/cyberpunk.mp4'
+            videoRef1.current.crossOrigin = 'anonymous'
+            videoRef1.current.loop = true
+            videoRef1.current.muted = true
+            videoRef1.current.playsInLine = true
+            videoRef1.current.preload = 'auto'
+            videoRef1.current.playbackRate = 1
+            videoRef1.current.style.display = 'none'
+            document.body.appendChild(videoRef1.current)
+        }
 
-        const video2 = document.createElement('video')
-        video2.src = '/model/arcane.mp4'
-        video2.crossOrigin = 'anonymous'
-        video2.loop = true
-        video2.muted = true
-        video2.playsInline = true
-        video2.autoplay = true
+        if (!videoRef2.current) {
+            videoRef2.current = document.createElement('video')
+            videoRef2.current.src = '/model/arcane.mp4'
+            videoRef2.current.crossOrigin = 'anonymous'
+            videoRef2.current.loop = true
+            videoRef2.current.muted = true
+            videoRef2.current.playsInline = true
+            videoRef2.current.preload = 'auto'
+            videoRef2.current.playbackRate = 1
+            videoRef2.current.style.display = 'none'
+            document.body.appendChild(videoRef2.current)
+        }
         
         // Create video textures
-        const cyberpunkTexture = new THREE.VideoTexture(video1)
-        cyberpunkTexture.minFilter = THREE.LinearFilter
-        cyberpunkTexture.magFilter = THREE.LinearFilter
-        cyberpunkTexture.colorSpace = THREE.SRGBColorSpace
-        cyberpunkTexture.flipY = false
+        if (!videoTextureRef1.current && videoRef1.current) {
+            videoTextureRef1.current = new THREE.VideoTexture(videoRef1.current)
+            videoTextureRef1.current.minFilter = THREE.LinearFilter
+            videoTextureRef1.current.magFilter = THREE.LinearFilter
+            videoTextureRef1.current.colorSpace = THREE.SRGBColorSpace
+            videoTextureRef1.current.flipY = false
+            videoTextureRef1.current.generateMipmaps = false
+        }
 
-        const arcaneTexture = new THREE.VideoTexture(video2)
-        arcaneTexture.minFilter = THREE.LinearFilter
-        arcaneTexture.magFilter = THREE.LinearFilter
-        arcaneTexture.colorSpace = THREE.SRGBColorSpace
-        arcaneTexture.flipY = false
+        if (!videoTextureRef2.current && videoRef2.current) {
+            videoTextureRef2.current = new THREE.VideoTexture(videoRef2.current)
+            videoTextureRef2.current.minFilter = THREE.LinearFilter
+            videoTextureRef2.current.magFilter = THREE.LinearFilter
+            videoTextureRef2.current.colorSpace = THREE.SRGBColorSpace
+            videoTextureRef2.current.flipY = false
+            videoTextureRef2.current.generateMipmaps = false
+        }
 
-        // Start video playback
-        video1.play()
-        video2.play()
+        // Start video playback when visible
+        if (isVisible) {
+            videoRef1.current?.play()
+            videoRef2.current?.play()
+        }
 
         // Configure baked textures
         Object.values(assets).forEach(texture => {
@@ -115,16 +214,14 @@ export default function Experience({ isVisible = false }) {
                 // Handling some video screens
                 if(child.name.includes('Cyberpunk_Monitor_Screen')) {
                     child.material = new THREE.MeshBasicMaterial({
-                        map: cyberpunkTexture,
+                        map: videoTextureRef1.current,
                         toneMapped: false,
-                        
                     })
                 }
                 if(child.name.includes('TV_Screen')) {
                     child.material = new THREE.MeshBasicMaterial({
-                        map: arcaneTexture,
+                        map: videoTextureRef2.current,
                         toneMapped: false,
-            
                     })
                 }
                 if(child.name.includes('Interact')) {
@@ -139,48 +236,37 @@ export default function Experience({ isVisible = false }) {
                     setGithubHitbox(child)
                 }
                 if(child.name.includes('Github_bake2')){
-                   child.visible = false
                     githubMeshRef.current = child 
                 }
                 
                 if(child.name.includes('Indeed_Cube_Interact')) {
-                    
                     setLinkedInHitbox(child)
                 }
                 if(child.name.includes('Indeed_bake2')) {
-                    
-                    child.visible = false
                     linkedInMeshRef.current = child
                 }
                 if(child.name.includes('Email_Cube_Interact')) {
-                    
                     setEmailHitbox(child)
                 }
                 if(child.name.includes('Email_bake2')) {
-                    child.visible = false
                     emailMeshRef.current = child
-                    
                 }
                 if(child.name.includes('About_Me_Cube_Interact')){
                     setAboutMeHitbox(child)
                 }
                 if(child.name.includes('About_me_Sphere_Glow')){
-                    child.visible = false
                     aboutMeMeshRef.current = child
                 }
                 if(child.name.includes('Contact_Me_Cube_Interact')){
                     setContactMeHitbox(child)
                 }
                 if(child.name.includes('Contact_me_Sphere_Glow')){
-                    child.visible = false
                     contactMeMeshRef.current = child
-                    
                 }
                 if(child.name.includes('Experiance_Cube_Interact')){
                     setExperienceHitbox(child)
                 }
                 if(child.name.includes('experiance_Sphere_Glow')){
-                    child.visible = false
                     experienceMeshRef.current = child
                 }
                 
@@ -205,7 +291,31 @@ export default function Experience({ isVisible = false }) {
         
 
    
-    }, [room, assets, ]) 
+    }, [room, assets, isVisible])
+
+
+    // Enhanced cleanup function
+    useEffect(() => {
+        return () => {
+            if (isMounted.current) {
+                videoRef1.current?.pause()
+                videoRef2.current?.pause()
+                if (videoRef1.current && document.body.contains(videoRef1.current)) {
+                    document.body.removeChild(videoRef1.current)
+                }
+                if (videoRef2.current && document.body.contains(videoRef2.current)) {
+                    document.body.removeChild(videoRef2.current)
+                }
+                // Reset all hitboxes and meshes
+                setGithubHitbox(null)
+                setLinkedInHitbox(null)
+                setEmailHitbox(null)
+                setAboutMeHitbox(null)
+                setContactMeHitbox(null)
+                setExperienceHitbox(null)
+            }
+        }
+    }, [])
 
     
     return (
@@ -220,13 +330,13 @@ export default function Experience({ isVisible = false }) {
                 />
             </EffectComposer> */}
 
-            <Lights room={{room}}/>
+            <Lights />
             <Camera/>
             <OrbitControls target={[0,11,0]} minDistance={1} maxDistance={20000} />
             <primitive object={room.scene} />
 
-            {/* render hoverables */}
-            {isVisible && (
+            {/* render hoverables - Always render when hitboxes are available */}
+            {(githubHitbox || linkedInHitbox || emailHitbox || aboutMeHitbox || contactMeHitbox || experienceHitbox) && (
                 <HoverAnimations 
                     Hitboxes={{
                         githubHitbox,

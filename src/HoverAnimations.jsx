@@ -4,7 +4,7 @@ import React from "react"
 
 export default function HoverAnimations({ Hitboxes, Meshes }) {
 
-  // Social media icons that grow bigger AND float up when hovered
+  
   const socialIcons = [
     { name: 'github', hitbox: Hitboxes.githubHitbox, mesh: Meshes.githubMeshRef, URL:'https://github.com/Arian-Dane' },
     { name: 'linkedIn', hitbox: Hitboxes.linkedInHitbox, mesh: Meshes.linkedInMeshRef, URL:'https://www.linkedin.com/' },
@@ -29,7 +29,7 @@ export default function HoverAnimations({ Hitboxes, Meshes }) {
       mesh.userData.startingY = mesh.position.y
     }
 
-    // Scale animation (make bigger/smaller)
+    // Scale animation
     gsap.to(mesh.scale, {
       x: isHovering ? 1.2 : 1,
       y: isHovering ? 1.2 : 1,
@@ -51,7 +51,7 @@ export default function HoverAnimations({ Hitboxes, Meshes }) {
   const animateSection = (meshRef, isHovering) => {
     if (!meshRef.current) return
     
-    // Scale animation (make bigger/smaller)
+    // Scale animation 
     gsap.to(meshRef.current.scale, {
       x: isHovering ? 1.5 : 1,
       y: isHovering ? 1.5 : 1,
@@ -88,14 +88,7 @@ export default function HoverAnimations({ Hitboxes, Meshes }) {
 
           {/* Visible 3D object */}
           {mesh.current && (
-            <mesh
-              geometry={mesh.current.geometry}
-              position={mesh.current.position}
-              scale={mesh.current.scale}
-              rotation={mesh.current.rotation}
-              material={mesh.current.material}
-              ref={mesh}
-            />
+            <primitive object={mesh.current} />
           )}
         </React.Fragment>
       );
@@ -119,13 +112,7 @@ export default function HoverAnimations({ Hitboxes, Meshes }) {
 
         {/* Visible 3D object */}
         {mesh.current && (
-          <mesh
-            geometry={mesh.current.geometry}
-            position={mesh.current.position}
-            scale={mesh.current.scale}
-            material={mesh.current.material}
-            ref={mesh}
-          />
+          <primitive object={mesh.current} />
         )}
       </React.Fragment>
     ))}
