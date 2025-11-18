@@ -1,6 +1,7 @@
 import * as THREE from 'three'
 import gsap from "gsap"
-import React from "react"
+import React, { useRef, useState, useEffect } from "react"
+import { useThree } from '@react-three/fiber'
 
 export default function HoverAnimations({ Hitboxes, Meshes }) {
 
@@ -17,6 +18,64 @@ export default function HoverAnimations({ Hitboxes, Meshes }) {
     { name: 'contactMe', hitbox: Hitboxes.contactMeHitbox, mesh: Meshes.contactMeMeshRef },
     { name: 'experience', hitbox: Hitboxes.experienceHitbox, mesh: Meshes.experienceMeshRef },
   ]
+
+  // Camera control: toggle camera to section position and back
+  const { camera } = useThree()
+  const originalCameraRef = useRef({ position: null, rotation: null })
+  const [activeSection, setActiveSection] = useState(null)
+
+  useEffect(() => {
+    // store original camera transform once
+    if (!originalCameraRef.current.position) {
+      originalCameraRef.current.position = camera.position.clone()
+      originalCameraRef.current.rotation = camera.rotation.clone()
+    }
+  }, [camera])
+
+  // Define target camera transforms per section 
+  const sectionCameraTargets = {
+    aboutMe: {
+      position: { x: -50, y: 6, z: 30 },
+      rotation: {
+        x: THREE.MathUtils.degToRad(45),
+        y: THREE.MathUtils.degToRad(-30),
+        z: 0,
+      }
+    },
+    contactMe: {
+      position: { x: 5, y: 4, z: 6 },
+      rotation: {
+        x: THREE.MathUtils.degToRad(40),
+        y: THREE.MathUtils.degToRad(10),
+        z: 0,
+      }
+    },
+    experience: {
+      position: { x: -20, y: 8, z: 12 },
+      rotation: {
+        x: THREE.MathUtils.degToRad(50),
+        y: THREE.MathUtils.degToRad(-10),
+        z: 0,
+      }
+    }
+  }
+
+  const moveCameraTo = (target, duration = 1) => {
+    if (!camera || !target) return
+    gsap.killTweensOf(camera.position)
+    gsap.killTweensOf(camera.rotation)
+    gsap.to(camera.position, { x: target.position.x, y: target.position.y, z: target.position.z, duration, ease: 'power2.out' })
+    gsap.to(camera.rotation, { x: target.rotation.x, y: target.rotation.y, z: target.rotation.z, duration, ease: 'power2.out' })
+  }
+
+  const resetCamera = (duration = 1) => {
+    const orig = originalCameraRef.current
+    if (!orig || !orig.position) return
+    gsap.killTweensOf(camera.position)
+    gsap.killTweensOf(camera.rotation)
+    gsap.to(camera.position, { x: orig.position.x, y: orig.position.y, z: orig.position.z, duration, ease: 'power2.out' })
+    gsap.to(camera.rotation, { x: orig.rotation.x, y: orig.rotation.y, z: orig.rotation.z, duration, ease: 'power2.out' })
+  }
 
   
   const animateSocialIcon = (meshRef, isHovering) => {
@@ -63,6 +122,21 @@ export default function HoverAnimations({ Hitboxes, Meshes }) {
     document.body.style.cursor = isHovering ? "pointer" : "default"
   }
 
+  // Toggle camera on section click
+  const handleSectionClick = (name) => {
+    if (activeSection === name) {
+      // currently focused on this section -> reset
+      resetCamera(0.9)
+      setActiveSection(null)
+    } else {
+      const target = sectionCameraTargets[name]
+      if (target) {
+        moveCameraTo(target, 1)
+        setActiveSection(name)
+      }
+    }
+  }
+
   return (
   <>
     
@@ -106,7 +180,7 @@ export default function HoverAnimations({ Hitboxes, Meshes }) {
             visible={false}
             onPointerOver={() => animateSection(mesh, true)}
             onPointerOut={() => animateSection(mesh, false)}
-            onClick={()=> {console.log(name)}}
+            onClick={() => handleSectionClick(name)}
           />
         )}
 
