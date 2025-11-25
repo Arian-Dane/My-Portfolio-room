@@ -12,8 +12,9 @@ import RiotApiCall from './API/RiotAPI.js'
 
 export default function Experience({ isVisible = false }) {
     const room = useGLTF('/model/room.glb')
-    const { scene, invalidate } = useThree()    
-
+    const { camera } = useThree()    
+    //animation instance
+    const animations = useAnimations(room.animations, room.scene)
     //state
     const[githubHitbox, setGithubHitbox] = useState(null)
     const[linkedInHitbox,setLinkedInHitbox] = useState(null)
@@ -21,16 +22,17 @@ export default function Experience({ isVisible = false }) {
     const [aboutMeHitbox, setAboutMeHitbox] = useState(null)
     const [contactMeHitbox, setContactMeHitbox] = useState(null)
     const [experienceHitbox, setExperienceHitbox] = useState(null)
-    const [matchOutcome, setMatchOutcome] = useState(null)
-    
-    // Force a re-render when canvas size changes
-    useEffect(() => {
-        const handleResize = () => {
-            invalidate()
-        }
-        window.addEventListener('resize', handleResize)
-        return () => window.removeEventListener('resize', handleResize)
-    }, [])
+    const [matchOutcome, setMatchOutcome] = useState(false)
+
+    //refs
+    const githubMeshRef = useRef()
+    const linkedInMeshRef = useRef()
+    const emailMeshRef = useRef()
+    const aboutMeMeshRef = useRef()
+    const contactMeMeshRef = useRef()
+    const experienceMeshRef = useRef()
+    const idleMonitorMeshRef = useRef()
+    const controls = useRef()
     
     //Fetch API data once
     useEffect(()=>{
@@ -42,21 +44,6 @@ export default function Experience({ isVisible = false }) {
     },[])
     console.log(matchOutcome)
     
-    
-    
-    const githubMeshRef = useRef()
-    const linkedInMeshRef = useRef()
-    const emailMeshRef = useRef()
-    const aboutMeMeshRef = useRef()
-    const contactMeMeshRef = useRef()
-    const experienceMeshRef = useRef()
-    const idleMonitorMeshRef = useRef()
-    
-    //animation instance
-    const animations = useAnimations(room.animations, room.scene)
-
-    
-   
     useEffect(() => {
         const chair = animations.actions.Chair_Spin
         const cat = animations.actions.catt
@@ -68,8 +55,8 @@ export default function Experience({ isVisible = false }) {
             
         
     }, [animations])
-
     
+
     const isMounted = useRef(true)
     useEffect(() => {
         return () => {
@@ -269,10 +256,8 @@ export default function Experience({ isVisible = false }) {
         // Single traverse target objects
         room.scene.traverse((child) => {
             if(child.isMesh) {
-                // Log all Monitor screens for debugging
-                if(child.name.includes('Monitor')) {
-                    console.log('Found mesh with Monitor:', child.name);
-                }
+                if(child.name.includes('Monitor')) 
+                
                 if(child.name.includes('Cyberpunk_Monitor_Screen')) {
                     child.material = new THREE.MeshBasicMaterial({
                         map: videoTextureRef1.current,
@@ -408,14 +393,14 @@ export default function Experience({ isVisible = false }) {
                 luminanceThreshold={1} 
                 luminanceSmoothing={0.025}
                 />
-            </EffectComposer> */}
+            </EffectComposer> */}   
 
             <Lights />
+            
             <CameraControls/>
-            <OrbitControls target={[0,11,0]} minDistance={1} maxDistance={20000} />
             <primitive object={room.scene} />
 
-            {/* render hoverables - Always render when hitboxes are available */}
+            {/* render hoverables*/}
             {(githubHitbox || linkedInHitbox || emailHitbox || aboutMeHitbox || contactMeHitbox || experienceHitbox) && (
                 <HoverAnimations 
                     Hitboxes={{
