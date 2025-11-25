@@ -1,5 +1,6 @@
 export default async function RiotApiCall() {
-    const apiKey = "RGAPI-2b10c467-6c09-439b-92d8-87428166fb5a"
+    
+    const apiKey = ""
     const playerURL=`https://americas.api.riotgames.com/riot/account/v1/accounts/by-riot-id/kiwi%20is%20dead/na1?api_key=${apiKey}`
     
     //Fetching player puuid
