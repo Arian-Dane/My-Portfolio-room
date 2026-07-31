@@ -1,0 +1,212 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+@layer utilities {
+  .neon-pink {
+    color: #ff00ff;
+    text-shadow:
+      0 0 2px #ff00ff,
+      0 0 2px #ff00ff,
+      0 0 2px #ff00ff,
+      0 0 2px #ff69b4;
+  }
+}
+
+@font-face {
+  font-family: 'SynthekKana';
+  src: url('/model/fonts/synthek_kana_ldr.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Ethnocentric';
+  src: url('/model/fonts/ethnocentric-rg.woff') format('woff');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+
+
+
+html,
+body,
+#root
+{
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    background: #000000;
+    width: 100%;
+    height: 100%;
+}
+
+.cyberpunk-box {
+  color: white;
+  padding: 2rem;
+  
+  clip-path: polygon(0 0, 100% 0, 100% 92%, 90% 100%, 10% 100%, 0 92%);
+}
+
+.top-left-bottom-right-clip {
+  clip-path: polygon(15% 0, 100% 0, 100% 85%, 85% 100%, 0 100%, 0 15%);
+}
+.top-right-bottom-left-clip {
+  clip-path: polygon(0 0, 85% 0, 100% 15%, 100% 100%, 15% 100%, 0 85%);
+}
+
+
+.top-left-right-clip {
+  clip-path: polygon(15% 0,85% 0,100% 15%,100% 100%, 0% 100%, 0 15%);}       
+
+/* Custom Cyberpunk Scrollbar */
+::-webkit-scrollbar {
+  width: 12px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0a0a0a;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, #a020f0, #000000);
+  border-radius: 10px;
+  clip-path: polygon(0% 0%, 100% 10%, 100% 90%, 0% 100%);
+  box-shadow: inset 2px -2px 6px rgba(255, 0, 255, 0.3);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(135deg, #ff00ff, #3a0066);
+  box-shadow: inset 2px -2px 6px rgba(255, 0, 255, 0.6);
+}
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #a020f0 #0a0a0a;
+}
+
+.backgroundGradient{
+  background:linear-gradient(to bottom, rgba(255, 0, 255, 1) 0%, rgba(88, 38, 136, 1) 100%);
+}
+
+/* Webpage root: default background for the rendered webpage area */
+.webpage-root {
+  background: #09090f;
+}
+
+.pink-glow {
+  filter: drop-shadow(0 0 1px #ff00ff)
+          drop-shadow(0 0 1px #ff00ff)
+          drop-shadow(0 0 1px #ff00ff);
+}
+
+/* pink gradient
+background: #E208E0;
+background: radial-gradient(circle, rgba(226, 8, 224, 1) 0%, rgba(0, 0, 0, 1) 100%);
+
+purple gradient
+background: #582688;
+background: radial-gradient(circle, rgba(88, 38, 136, 1) 0%, rgba(0, 0, 0, 1) 100%);*/
+
+/* Variables */
+@layer base {
+  :root {
+    --cyber-dark: 240 20% 4%;
+    --neon-pink: 330 100% 59%;
+    --foreground: 300 10% 90%;
+  }
+
+  body {
+    font-family: 'Orbitron', sans-serif;
+    color: hsl(var(--foreground));
+    background: #000000;
+  }
+}
+
+/* Custom utilities */
+@layer utilities {
+  .glass-nav {
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    background: hsl(var(--cyber-dark)/0.7);
+    border: 1px solid hsl(var(--neon-pink)/0.15);
+  }
+
+  .neon-text {
+    color: hsl(var(--neon-pink));
+    text-shadow:
+      0 0 7px hsl(var(--neon-pink)/0.8),
+      0 0 20px hsl(var(--neon-pink)/0.5),
+      0 0 42px hsl(var(--neon-pink)/0.3),
+      0 0 82px hsl(var(--neon-pink)/0.2);
+  }
+
+  .neon-glow {
+    box-shadow: 0 0 18px hsl(var(--neon-pink)/0.4), 0 0 32px hsl(var(--neon-pink)/0.22);
+  }
+
+  .neon-button {
+    transition: all 0.35s ease;
+  }
+
+  .neon-button:hover {
+    box-shadow: 0 0 20px hsla(330, 100%, 59%, 0.45), 0 0 50px hsla(330, 100%, 59%, 0.22);
+    background: hsla(330, 100%, 59%, 0.18);
+    border-color: hsla(330, 100%, 59%, 0.5);
+    color: #ffffff;
+  }
+
+  .icon-glow {
+    transition: box-shadow 0.25s ease, transform 0.25s ease;
+  }
+
+  .icon-glow:hover {
+    box-shadow: 0 0 16px hsla(330, 100%, 59%, 0.35), 0 0 30px hsla(330, 100%, 59%, 0.15);
+    transform: translateY(-2px);
+  }
+
+  .glass-card {
+    background: hsl(var(--cyber-dark)/0.6);
+    border: 1px solid hsl(var(--neon-pink)/0.14);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+  }
+
+  .animate-pulse-neon {
+    animation: pulse-neon 2s ease-in-out infinite;
+  }
+
+  .animate-fade-in-up {
+    animation: fade-in-up 0.8s ease-out forwards;
+  }
+
+  .animate-glitch-skew {
+    animation: glitch-skew 3s ease-in-out infinite;
+  }
+
+  @keyframes pulse-neon {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+  }
+
+  @keyframes fade-in-up {
+    from {
+      opacity: 0;
+      transform: translateY(1rem);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes glitch-skew {
+    0%, 100% { transform: skewX(0deg); }
+    30% { transform: skewX(-1.5deg); }
+    60% { transform: skewX(1.5deg); }
+  }
+}

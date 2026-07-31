@@ -1,0 +1,39 @@
+ <div className="flex mask z-10 justify-between w-full h-[2.8rem]  top-0 shadow overflow-hidden rounded-bl rounded-br font-ethnocentric">
+                <div className="Navbar1 py-2 flex relative z-10  w-[60%] bg-midnight h-full items-center justify-between ">
+                <div className="ml-[7%]  ">
+                    
+                    <div className=" pt-4 pb-2 mb-[2px] ">
+                        <h1 className="  my-[-8px] text-[1.4rem] tracking-[0.25rem] font-bold text-left normpink">異体同心</h1>
+                        <h2 className=" text-white custom-H2 text-[0.7rem] text-right pr-[6px]">Dare To Dream</h2>
+                    </div>
+
+                </div>
+
+                
+                <ul className=" flex mt-4 text-[0.8rem] pt-3 gap-[10rem] ">
+                    <div className="nav-item flex flex-col items-center">
+                        <li className="navLink text-white mb-[-0.5rem]">Home</li>
+                        <span className="navDecor text-[1rem] font-bold ">.</span>
+                    </div>
+                    <div className="nav-item flex flex-col items-center pb-3">
+                        <li className="navLink text-white mb-[-0.5rem]">About Me</li>
+                        <span className="navDecor text-[1rem]  font-bold">.</span>
+                    </div>
+                    <div className="nav-item flex flex-col items-center pb-3">
+                        <li className="navLink text-white tracking-widest ">Projects</li>
+                        <span className="navDecor text-[1rem] font-bold mt-[-0.5rem]">.</span>
+                    </div>
+                </ul>
+                
+    
+            </div>
+
+            {/* Right Navbar */}
+            <div className="Navbar2 flex z-10 relative h-full mr-[2.2rem] text-[0.9rem] my-[1px] ">
+                <div className="text-black w-full flex gap-[3.8rem]">
+                        <button className="rounded-[4px] p-2 my-1">Get In Touch</button>
+                        <button className="h-[35px] w-[105px] p-[8px] my-1 ">Github</button>
+                        <button className="h-[35px] w-[105px] p-[8px] my-1 ">LinkedIn</button>
+                </div>
+            </div>
+        </div>

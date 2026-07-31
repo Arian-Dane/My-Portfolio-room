@@ -1,0 +1,78 @@
+.mask {
+  background-color: #080818;
+  position: relative;
+  overflow: hidden;
+}
+
+.mask::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  background-color: #080818;
+  width: 70%;
+  clip-path: polygon(0% 0%, calc(100% - 40px) 0%, calc(100% - 20px) 100%, 0% 100%);
+}
+
+.mask::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 0;
+  height: 100%;
+  background: #FF00FF;
+  background: linear-gradient(120deg, rgba(255, 0, 255, 1) 27%, rgba(143, 9, 141, 1) 64%, rgba(125, 4, 123, 1) 86%, rgba(125, 4, 123, 1) 100%);
+  width: 30%;
+  clip-path: polygon(22px 0%, 100% 0%, 100% 100%, 2px 100%);
+}
+
+.custom-H2 {
+  font-stretch: ultra-condensed;
+}
+
+
+.shadow{
+  box-shadow:
+    0 0 0 1.5px rgba(0, 0, 0, 0.15),
+    0 6px 12px rgba(0, 0, 0, 0.25),
+    0 12px 24px rgba(0, 0, 0, 0.18);
+}
+
+.navLink,
+.navDecor {
+    transition: color 0.6s ease, scale 0.3s ease;
+}
+
+.nav-item:hover .navLink,
+.nav-item:hover .navDecor {
+    color: #ff00ff;
+    cursor: pointer;
+    scale: 1.2;  
+}
+
+.navDecor {
+    color: #080818;
+}
+.normpink{
+  color: #ff00ff;
+}
+
+.bg{
+  background-color: #1b0a2e;
+  box-shadow: 0 0 0px #1b0a2e, 
+              0 0 0px #1b0a2e;
+}
+
+.accentText{
+  background: linear-gradient(180deg,rgb(255, 253, 253) 20%, rgba(255, 0, 255, 1) 65%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.overlay{
+  background-color: rgb(93, 89, 102);
+}
+.soft-shadow {
+  text-shadow: 2px 2px 6px rgba(187, 180, 185, 0.3);
+}
