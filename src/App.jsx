@@ -29,11 +29,20 @@ function App() {
         startingScreen.style.transition = 'opacity 0.5s ease-out'
       }
 
+     const music = new Audio("/model/bg-music.MP3");
+      music.loop = true;
+      music.volume = 0.2;
+      music.play().catch((error) => {
+        console.warn('Audio playback failed:', error)
+      });
+
     // Wait for fade out before removing
     setTimeout(() => {
       setShowStartingScreen(false)
       setIsExperienceVisible(true)
-    }, 50) // Slightly shorter than the transition to ensure smooth handoff
+    }, 100) // Slightly shorter than the transition to ensure smooth handoff
+
+
   }
   return (
     <div style={{ background: '#000000', width: '100vw', height: '100vh', position: 'fixed', top: 0, left: 0, overflow: 'hidden' }}>

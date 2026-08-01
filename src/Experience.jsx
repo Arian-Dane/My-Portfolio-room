@@ -1,30 +1,51 @@
 import * as THREE from 'three'
-import { useGLTF, useTexture, OrbitControls, useAnimations,} from '@react-three/drei'
-import { EffectComposer, Bloom } from '@react-three/postprocessing'
-import { BlendFunction } from 'postprocessing'
-import { useEffect,useState,useRef,useMemo } from 'react' 
-import { useThree,useFrame } from '@react-three/fiber' 
+import { useGLTF, useTexture, useAnimations } from '@react-three/drei'
+import { useThree } from '@react-three/fiber'
+import { useEffect, useState, useRef, useMemo } from 'react'
 import HoverAnimations from './HoverAnimations.jsx'
-import CameraControls from "./CameraControls.jsx"
-import Lights from "./Lights.jsx"
+import CameraControls from './CameraControls.jsx'
+import Lights from './Lights.jsx'
 import RiotApiCall from './API/RiotAPI.js'
+import { getDeviceTier, TIER_SETTINGS } from './utils/deviceTier.js'
+import { useRendererStats } from './hooks/useRendererStats.js'
 
+const BAKE_URLS = {
+    bake1: '/model/bake1.webp',
+    bake2: '/model/bake2.webp',
+    bake3: '/model/bake3.webp',
+    bake4: '/model/bake4.webp',
+    bake5: '/model/bake5.webp',
+    bake6: '/model/bake6.webp',
+    bake7: '/model/bake7.webp',
+}
+
+const EMPTY_HITBOXES = {
+    githubHitbox: null,
+    linkedInHitbox: null,
+    emailHitbox: null,
+    aboutMeHitbox: null,
+    contactMeHitbox: null,
+    experienceHitbox: null,
+}
 
 export default function Experience({ isVisible = false }) {
     const room = useGLTF('/model/room.glb')
-    const { camera } = useThree()    
-    //animation instance
     const animations = useAnimations(room.animations, room.scene)
-    //state
-    const[githubHitbox, setGithubHitbox] = useState(null)
-    const[linkedInHitbox,setLinkedInHitbox] = useState(null)
-    const[emailHitbox,setEmailHitbox] = useState(null)
-    const [aboutMeHitbox, setAboutMeHitbox] = useState(null)
-    const [contactMeHitbox, setContactMeHitbox] = useState(null)
-    const [experienceHitbox, setExperienceHitbox] = useState(null)
-    const [matchOutcome, setMatchOutcome] = useState(false) 
+    const { gl } = useThree()
 
-    //refs
+    useRendererStats() // dev-only console logging of draw calls / tris / tex memory
+
+    // computed once per mount — device capability doesn't change mid-session
+    const deviceTier = useMemo(() => getDeviceTier(), [])
+    const tierSettings = TIER_SETTINGS[deviceTier]
+    const isMobile = useMemo(
+        () => typeof navigator !== 'undefined' && /Android|iPhone|iPad|iPod/i.test(navigator.userAgent),
+        []
+    )
+
+    const [hitboxes, setHitboxes] = useState(EMPTY_HITBOXES)
+    const [matchOutcome, setMatchOutcome] = useState(null)
+
     const githubMeshRef = useRef()
     const linkedInMeshRef = useRef()
     const emailMeshRef = useRef()
@@ -32,386 +53,219 @@ export default function Experience({ isVisible = false }) {
     const contactMeMeshRef = useRef()
     const experienceMeshRef = useRef()
     const idleMonitorMeshRef = useRef()
-    const controls = useRef()
-    
-    //Fetch API data once
-    useEffect(()=>{
-        async function getMatchOutcome(){
-            const result =await RiotApiCall()
-            setMatchOutcome(result)
-        }
-        getMatchOutcome()
-    },[])
-    console.log(matchOutcome)
-    
+
+    const videoElsRef = useRef({})
+    const videoTexturesRef = useRef({})
+
+    // ---- fetch match outcome once ----
     useEffect(() => {
-        const chair = animations.actions.Chair_Spin
-        const cat = animations.actions.catt
-        const vacuum = animations.actions.Vac_Animation
-        
-        chair.play().timeScale = 0.9
-        cat.play().timeScale = 1.5
-        vacuum.play().timeScale = 0.5 
-            
-        
+        let cancelled = false
+        RiotApiCall()
+            .then((result) => {
+                if (!cancelled) setMatchOutcome(result)
+            })
+            .catch((err) => {
+                if (!cancelled) console.error('RiotApiCall failed:', err)
+            })
+        return () => { cancelled = true }
+    }, [])
+
+    // ---- play looping animations once they're available ----
+    useEffect(() => {
+        const { Chair_Spin, catt, Vac_Animation } = animations.actions
+        if (Chair_Spin) { Chair_Spin.play(); Chair_Spin.timeScale = 0.9 }
+        if (catt) { catt.play(); catt.timeScale = 1.5 }
+        if (Vac_Animation) { Vac_Animation.play(); Vac_Animation.timeScale = 0.5 }
     }, [animations])
-    
 
-    const isMounted = useRef(true)
+    // ---- load + configure baked textures once ----
+    const rawTextures = useTexture(BAKE_URLS)
+    const assets = useMemo(() => {
+        const maxAniso = gl.capabilities.getMaxAnisotropy()
+        const anisotropy = Math.min(maxAniso, tierSettings.maxAnisotropy)
+
+        Object.values(rawTextures).forEach((tex) => {
+            tex.flipY = false
+            tex.colorSpace = THREE.SRGBColorSpace
+            tex.anisotropy = anisotropy
+            tex.magFilter = THREE.LinearFilter
+            tex.minFilter = tierSettings.useMipmaps
+                ? THREE.LinearMipmapLinearFilter
+                : THREE.LinearFilter
+            tex.generateMipmaps = tierSettings.useMipmaps
+            tex.needsUpdate = true
+        })
+        return rawTextures
+    }, [rawTextures, gl, tierSettings])
+
+    // ---- one shared material per bake texture (not one per mesh) ----
+    const bakedMaterials = useMemo(() => {
+        const materials = {}
+        for (const key of Object.keys(BAKE_URLS)) {
+            materials[key] = new THREE.MeshBasicMaterial({ map: assets[key], toneMapped: false })
+        }
+        return materials
+    }, [assets])
+
     useEffect(() => {
         return () => {
-            isMounted.current = false
+            Object.values(bakedMaterials).forEach((mat) => mat.dispose())
         }
-    }, [])
-    
-    
+    }, [bakedMaterials])
 
-    
-    //const assets = {
-        //bake1: useTexture('/model/bake1.webp'),
-        //bake2: useTexture('/model/bake2.webp'),
-        //bake3: useTexture('/model/bake3.webp'),
-        //bake4: useTexture('/model/bake4.webp'),
-        //bake5: useTexture('/model/bake5.webp'),
-        //bake6: useTexture('/model/bake6.webp'),
-        //bake7: useTexture('/model/bake7.webp'),
-    //}
-
-    const bake1 = useTexture('/model/bake1.webp')
-    const bake2 = useTexture('/model/bake2.webp')
-    const bake3 = useTexture('/model/bake3.webp')
-    const bake4 = useTexture('/model/bake4.webp')
-    const bake5 = useTexture('/model/bake5.webp')
-    const bake6 = useTexture('/model/bake6.webp')
-    const bake7 = useTexture('/model/bake7.webp')
-
-    const assets = useMemo(() => ({
-        bake1,
-        bake2,
-        bake3,
-        bake4,
-        bake5,
-        bake6,
-        bake7,
-    }), [bake1, bake2, bake3, bake4, bake5, bake6, bake7])
-
-
-    
-    // Setup scene and textures 
-    const videoRef1 = useRef()
-    const videoRef2 = useRef()
-    const videoRef3 = useRef()
-    const videoTextureRef1 = useRef()
-    const videoTextureRef2 = useRef()
-    const videoTextureRef3 = useRef()
-
-    // Initialize hitboxes and meshes
+    // ---- create video elements + video textures exactly once ----
     useEffect(() => {
-        if (!room || !room.scene || !isMounted.current) return
-
-        // Create a cleanup function
-        const cleanup = () => {
-            if (isMounted.current) {
-                setGithubHitbox(null)
-                setLinkedInHitbox(null)
-                setEmailHitbox(null)
-                setAboutMeHitbox(null)
-                setContactMeHitbox(null)
-                setExperienceHitbox(null)
-            }
+        const makeVideo = (src) => {
+            const v = document.createElement('video')
+            if (src) v.src = src
+            v.crossOrigin = 'anonymous'
+            v.loop = true
+            v.muted = true
+            v.playsInline = true
+            v.preload = 'auto'
+            v.style.display = 'none'
+            document.body.appendChild(v)
+            return v
         }
 
-        // Initialize all meshes and hitboxes
+        const makeVideoTexture = (video) => {
+            const t = new THREE.VideoTexture(video)
+            t.minFilter = THREE.LinearFilter
+            t.magFilter = THREE.LinearFilter
+            t.colorSpace = THREE.SRGBColorSpace
+            t.flipY = false
+            t.generateMipmaps = false
+            return t
+        }
+
+        const cyberpunk = makeVideo('/model/cyberpunk.mp4')
+        const arcane = makeVideo('/model/arcane.mp4')
+        const idle = makeVideo('/model/leagueScreens/DefeatScreen.mp4')
+        idle.play().catch(() => {})
+
+        if (!tierSettings.playAmbientVideos) {
+            // low tier: grab a single frame for the screen textures instead of
+            // running two decoders continuously alongside the idle monitor
+            ;[cyberpunk, arcane].forEach((v) => {
+                v.play().then(() => v.pause()).catch(() => {})
+            })
+        }
+
+        videoElsRef.current = { cyberpunk, arcane, idle }
+        videoTexturesRef.current = {
+            cyberpunk: makeVideoTexture(cyberpunk),
+            arcane: makeVideoTexture(arcane),
+            idle: makeVideoTexture(idle),
+        }
+
+        return () => {
+            Object.values(videoElsRef.current).forEach((v) => {
+                v.pause()
+                v.removeAttribute('src')
+                v.load()
+                if (document.body.contains(v)) document.body.removeChild(v)
+            })
+            Object.values(videoTexturesRef.current).forEach((t) => t.dispose())
+        }
+    }, [tierSettings.playAmbientVideos])
+
+    // ---- traverse the scene exactly ONCE per model load ----
+    useEffect(() => {
+        if (!room?.scene) return
+
+        const videoTex = videoTexturesRef.current
+        const nextHitboxes = { ...EMPTY_HITBOXES }
+
         room.scene.traverse((child) => {
-            if(child.isMesh) {
-                if(child.name.includes('Github_Cube_Interact')) {
-                    setGithubHitbox(child)
-                }
-                if(child.name.includes('Github_bake2')){
-                    githubMeshRef.current = child 
-                }
-                if(child.name.includes('Indeed_Cube_Interact')) {
-                    setLinkedInHitbox(child)
-                }
-                if(child.name.includes('Indeed_bake2')) {
-                    linkedInMeshRef.current = child
-                }
-                if(child.name.includes('Email_Cube_Interact')) {
-                    setEmailHitbox(child)
-                }
-                if(child.name.includes('Email_bake2')) {
-                    emailMeshRef.current = child
-                }
-                if(child.name.includes('About_Me_Cube_Interact')){
-                    setAboutMeHitbox(child)
-                }
-                if(child.name.includes('About_me_Sphere_Glow')){
-                    aboutMeMeshRef.current = child
-                }
-                if(child.name.includes('Contact_Me_Cube_Interact')){
-                    setContactMeHitbox(child)
-                }
-                if(child.name.includes('Contact_me_Sphere_Glow')){
-                    contactMeMeshRef.current = child
-                }
-                if(child.name.includes('Experiance_Cube_Interact')){
-                    setExperienceHitbox(child)
-                }
-                if(child.name.includes('experiance_Sphere_Glow')){
-                    experienceMeshRef.current = child
-                }
+            if (!child.isMesh) return
+            const name = child.name
+
+            if (name.includes('Interact')) {
+                child.visible = false
+            }
+
+            if (name.includes('Github_Cube_Interact')) nextHitboxes.githubHitbox = child
+            else if (name.includes('Indeed_Cube_Interact')) nextHitboxes.linkedInHitbox = child
+            else if (name.includes('Email_Cube_Interact')) nextHitboxes.emailHitbox = child
+            else if (name.includes('About_Me_Cube_Interact')) nextHitboxes.aboutMeHitbox = child
+            else if (name.includes('Contact_Me_Cube_Interact')) nextHitboxes.contactMeHitbox = child
+            else if (name.includes('Experiance_Cube_Interact')) nextHitboxes.experienceHitbox = child
+
+            if (name.includes('Github_bake2')) githubMeshRef.current = child
+            else if (name.includes('Indeed_bake2')) linkedInMeshRef.current = child
+            else if (name.includes('Email_bake2')) emailMeshRef.current = child
+            else if (name.includes('About_me_Sphere_Glow')) aboutMeMeshRef.current = child
+            else if (name.includes('Contact_me_Sphere_Glow')) contactMeMeshRef.current = child
+            else if (name.includes('experiance_Sphere_Glow')) experienceMeshRef.current = child
+
+            if (name.includes('Cyberpunk_Monitor_Screen')) {
+                child.material = new THREE.MeshBasicMaterial({ map: videoTex.cyberpunk, toneMapped: false })
+                return
+            }
+            if (name.includes('TV_Screen')) {
+                child.material = new THREE.MeshBasicMaterial({ map: videoTex.arcane, toneMapped: false })
+                return
+            }
+            if (name.includes('Idle_Monitor_Screen')) {
+                idleMonitorMeshRef.current = child
+                child.material = new THREE.MeshBasicMaterial({ map: videoTex.idle, toneMapped: false })
+                return
+            }
+
+            if (name.includes('Yellow')) {
+                child.material = new THREE.MeshStandardMaterial({ color: '#9F9360' })
+                return
+            }
+
+            const bakeKey = Object.keys(BAKE_URLS).find((key) => name.includes(key))
+            if (bakeKey) {
+                child.material = bakedMaterials[bakeKey]
             }
         })
-    }, [room.scene])
 
+        setHitboxes(nextHitboxes)
+
+        const vacuum = room.scene.getObjectByName('Vacuum_Complete_bake3')
+        if (vacuum) {
+            vacuum.scale.set(0.95, 0.95, 0.95)
+        }
+    }, [room.scene, bakedMaterials])
+
+    // ---- visibility controls play/pause for ambient videos (tier-gated) ----
     useEffect(() => {
-        if (!room || !room.scene) return
-        
-        //videos setup
-        if (!videoRef1.current) {
-            videoRef1.current = document.createElement('video')
-            videoRef1.current.src = '/model/cyberpunk.mp4'
-            videoRef1.current.crossOrigin = 'anonymous'
-            videoRef1.current.loop = true
-            videoRef1.current.muted = true
-            videoRef1.current.playsInLine = true
-            videoRef1.current.preload = 'auto'
-            videoRef1.current.playbackRate = 1
-            videoRef1.current.style.display = 'none'
-            document.body.appendChild(videoRef1.current)
-        }
+        if (!tierSettings.playAmbientVideos) return // low tier: stays paused on its single frame
 
-        if (!videoRef2.current) {
-            videoRef2.current = document.createElement('video')
-            videoRef2.current.src = '/model/arcane.mp4'
-            videoRef2.current.crossOrigin = 'anonymous'
-            videoRef2.current.loop = true
-            videoRef2.current.muted = true
-            videoRef2.current.playsInline = true
-            videoRef2.current.preload = 'auto'
-            videoRef2.current.playbackRate = 1
-            videoRef2.current.style.display = 'none'
-            document.body.appendChild(videoRef2.current)
-        }
-
-        if (!videoRef3.current) {
-            videoRef3.current = document.createElement('video')
-            videoRef3.current.crossOrigin = 'anonymous'
-            videoRef3.current.loop = true
-            videoRef3.current.muted = true
-            videoRef3.current.playsInline = true
-            videoRef3.current.preload = 'auto'
-            videoRef3.current.playbackRate = 1
-            videoRef3.current.style.display = 'none'
-            document.body.appendChild(videoRef3.current)
-        }
-
-        
-        // Create video textures
-        if (!videoTextureRef1.current && videoRef1.current) {
-            videoTextureRef1.current = new THREE.VideoTexture(videoRef1.current)
-            videoTextureRef1.current.minFilter = THREE.LinearFilter
-            videoTextureRef1.current.magFilter = THREE.LinearFilter
-            videoTextureRef1.current.colorSpace = THREE.SRGBColorSpace
-            videoTextureRef1.current.flipY = false
-            videoTextureRef1.current.generateMipmaps = false
-        }
-
-        if (!videoTextureRef2.current && videoRef2.current) {
-            videoTextureRef2.current = new THREE.VideoTexture(videoRef2.current)
-            videoTextureRef2.current.minFilter = THREE.LinearFilter
-            videoTextureRef2.current.magFilter = THREE.LinearFilter
-            videoTextureRef2.current.colorSpace = THREE.SRGBColorSpace
-            videoTextureRef2.current.flipY = false
-            videoTextureRef2.current.generateMipmaps = false
-        }
-
-        if (!videoTextureRef3.current && videoRef3.current) {
-            videoTextureRef3.current = new THREE.VideoTexture(videoRef3.current)
-            videoTextureRef3.current.minFilter = THREE.LinearFilter
-            videoTextureRef3.current.magFilter = THREE.LinearFilter
-            videoTextureRef3.current.colorSpace = THREE.SRGBColorSpace
-            videoTextureRef3.current.flipY = false
-            videoTextureRef3.current.generateMipmaps = false
-        }
-
-        // Start video playback when visible
+        const { cyberpunk, arcane } = videoElsRef.current
         if (isVisible) {
-            videoRef1.current?.play()
-            videoRef2.current?.play()
+            cyberpunk?.play().catch(() => {})
+            arcane?.play().catch(() => {})
+        } else {
+            cyberpunk?.pause()
+            arcane?.pause()
         }
+    }, [isVisible, tierSettings.playAmbientVideos])
 
-        // Configure baked textures
-        Object.values(assets).forEach(texture => {
-            texture.flipY = false
-            texture.colorSpace = THREE.SRGBColorSpace
-            texture.needsUpdate = true
-            texture.anisotropy = 16
-            texture.magFilter = THREE.LinearFilter
-            texture.minFilter = THREE.LinearMipmapLinearFilter
-        })
-
-        
-
-        // Single traverse target objects
-        room.scene.traverse((child) => {
-            if(child.isMesh) {
-                if(child.name.includes('Monitor')) 
-                
-                if(child.name.includes('Cyberpunk_Monitor_Screen')) {
-                    child.material = new THREE.MeshBasicMaterial({
-                        map: videoTextureRef1.current,
-                        toneMapped: false,
-                    })
-                }
-                if(child.name.includes('TV_Screen')) {
-                    child.material = new THREE.MeshBasicMaterial({
-                        map: videoTextureRef2.current,
-                        toneMapped: false,
-                    })
-                }
-                if(child.name.includes("Idle_Monitor_Screen")){
-                    idleMonitorMeshRef.current = child
-                    child.material = new THREE.MeshBasicMaterial({
-                        map:videoTextureRef3.current,
-                        toneMapped:false,
-                    })
-                }
-                if(child.name.includes('Interact')) {
-                    child.visible = false
-                }
-                if(child.name.includes('Yellow')) {
-                    child.material = new THREE.MeshStandardMaterial({
-                        color: '#9F9360',
-                    })
-                }
-                if(child.name.includes('Github_Cube_Interact')) {
-                    setGithubHitbox(child)
-                }
-                if(child.name.includes('Github_bake2')){
-                    githubMeshRef.current = child 
-                }
-                
-                if(child.name.includes('Indeed_Cube_Interact')) {
-                    setLinkedInHitbox(child)
-                }
-                if(child.name.includes('Indeed_bake2')) {
-                    linkedInMeshRef.current = child
-                }
-                if(child.name.includes('Email_Cube_Interact')) {
-                    setEmailHitbox(child)
-                }
-                if(child.name.includes('Email_bake2')) {
-                    emailMeshRef.current = child
-                }
-                if(child.name.includes('About_Me_Cube_Interact')){
-                    setAboutMeHitbox(child)
-                }
-                if(child.name.includes('About_me_Sphere_Glow')){
-                    aboutMeMeshRef.current = child
-                }
-                if(child.name.includes('Contact_Me_Cube_Interact')){
-                    setContactMeHitbox(child)
-                }
-                if(child.name.includes('Contact_me_Sphere_Glow')){
-                    contactMeMeshRef.current = child
-                }
-                if(child.name.includes('Experiance_Cube_Interact')){
-                    setExperienceHitbox(child)
-                }
-                if(child.name.includes('experiance_Sphere_Glow')){
-                    experienceMeshRef.current = child
-                }
-                
-
-                
-                
-                // Handle baked materials
-                else {
-                    const bakeNumber = Object.keys(assets).find(key => child.name.includes(key))
-                    if(bakeNumber) {
-                        child.material = new THREE.MeshBasicMaterial({
-                            map: assets[bakeNumber],
-                            toneMapped: false
-                        })
-                    }
-                }
-            }
-        })
-        
-
-        room.scene.getObjectByName('Vacuum_Complete_bake3').scale.set(0.95, 0.95, 0.95)
-        
-
-   
-    }, [room, assets, isVisible])
-
-    // Update video3 src when matchOutcome changes
+    // ---- swap the idle monitor's video once the match result is known ----
     useEffect(() => {
-        if (matchOutcome !== null && videoRef3.current) {
-            const newSrc = matchOutcome
-                ? '/model/leagueScreens/VictoryScreen.mp4'
-                : '/model/leagueScreens/DefeatScreen.mp4';
-            
-            videoRef3.current.src = newSrc;
-            videoRef3.current.play();
-        }
-    }, [matchOutcome]);
+        const idle = videoElsRef.current.idle
+        if (matchOutcome === null || !idle) return
+        idle.src = matchOutcome
+            ? '/model/leagueScreens/VictoryScreen.mp4'
+            : '/model/leagueScreens/DefeatScreen.mp4'
+        idle.play().catch(() => {})
+    }, [matchOutcome])
 
+    const hasHitboxes = Object.values(hitboxes).some(Boolean)
 
-    // Enhanced cleanup function
-    useEffect(() => {
-        return () => {
-            if (isMounted.current) {
-                videoRef1.current?.pause()
-                videoRef2.current?.pause()
-                if (videoRef1.current && document.body.contains(videoRef1.current)) {
-                    document.body.removeChild(videoRef1.current)
-                }
-                if (videoRef2.current && document.body.contains(videoRef2.current)) {
-                    document.body.removeChild(videoRef2.current)
-                }
-                // Reset all hitboxes and meshes
-                setGithubHitbox(null)
-                setLinkedInHitbox(null)
-                setEmailHitbox(null)
-                setAboutMeHitbox(null)
-                setContactMeHitbox(null)
-                setExperienceHitbox(null)
-            }
-        }
-    }, [])
-
-    
     return (
-        <>  
-            {/* <EffectComposer>
-                <Bloom 
-                blendFunction={BlendFunction.LIGHTEN} // Makes it additive
-                intensity={0.9} // Increase for more glow
-                kernelSize={5} // Blur size
-                luminanceThreshold={1} 
-                luminanceSmoothing={0.025}
-                />
-            </EffectComposer> */}   
-
+        <>
             <Lights />
-            
-            <CameraControls/>
+            <CameraControls isMobile={isMobile} />
             <primitive object={room.scene} />
 
-            {/* render hoverables*/}
-            {(githubHitbox || linkedInHitbox || emailHitbox || aboutMeHitbox || contactMeHitbox || experienceHitbox) && (
-                <HoverAnimations 
-                    Hitboxes={{
-                        githubHitbox,
-                        linkedInHitbox,
-                        emailHitbox,
-                        aboutMeHitbox,
-                        contactMeHitbox,
-                        experienceHitbox,
-                    }}
-
+            {hasHitboxes && (
+                <HoverAnimations
+                    Hitboxes={hitboxes}
                     Meshes={{
                         githubMeshRef,
                         linkedInMeshRef,
@@ -425,3 +279,5 @@ export default function Experience({ isVisible = false }) {
         </>
     )
 }
+
+useGLTF.preload('/model/room.glb')
