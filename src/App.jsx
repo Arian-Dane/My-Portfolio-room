@@ -7,6 +7,12 @@ import CollapsedSvg from './CollapsedSvg.jsx'
 import ExpandSvg from './ExpandSvg.jsx'
 import Webpage from "./Webpage.jsx"
 
+const bgMusic = new Audio("/model/bg-music.MP3")
+bgMusic.preload = "auto"
+bgMusic.loop = true
+bgMusic.volume = 0.2
+bgMusic.load()
+
 function App() {
     const [showLoader, setShowLoader] = useState(true)
     const [showStartingScreen, setShowStartingScreen] = useState(false)
@@ -29,12 +35,16 @@ function App() {
         startingScreen.style.transition = 'opacity 0.5s ease-out'
       }
 
-     const music = new Audio("/model/bg-music.MP3");
-      music.loop = true;
-      music.volume = 0.2;
-      music.play().catch((error) => {
-        console.warn('Audio playback failed:', error)
-      });
+    //  const music = new Audio("/model/bg-music.MP3");
+    //   music.loop = true;
+    //   music.volume = 0.2;
+    //   music.play().catch((error) => {
+    //     console.warn('Audio playback failed:', error)
+    //   });
+
+    bgMusic.play().catch((error) => {
+    console.warn('Audio playback failed:', error)
+    })
 
     // Wait for fade out before removing
     setTimeout(() => {
