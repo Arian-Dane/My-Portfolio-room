@@ -57,7 +57,7 @@ export default function Experience({ isVisible = false, onVideosReady }) {
     const videoElsRef = useRef({})
     const videoTexturesRef = useRef({})
 
-    // keep the latest onVideosReady in a ref so the loading effect below
+    // keep the latest onVideosReady in a ref so the video-loading effect
     // doesn't need it in its dependency array (avoids re-running on every render)
     const onVideosReadyRef = useRef(onVideosReady)
     useEffect(() => {
@@ -128,9 +128,24 @@ export default function Experience({ isVisible = false, onVideosReady }) {
             v.crossOrigin = 'anonymous'
             v.loop = true
             v.muted = true
+            v.defaultMuted = true
             v.playsInline = true
+            v.setAttribute('playsinline', 'true')
+            v.setAttribute('webkit-playsinline', 'true') // older iOS Safari
             v.preload = 'auto'
-            v.style.display = 'none'
+
+            // IMPORTANT: iOS Safari stops decoding frames for display:none
+            // videos, even if play() resolves successfully. Keep it in
+            // normal layout flow but visually invisible instead.
+            v.style.position = 'absolute'
+            v.style.top = '0'
+            v.style.left = '0'
+            v.style.width = '1px'
+            v.style.height = '1px'
+            v.style.opacity = '0'
+            v.style.pointerEvents = 'none'
+            v.style.zIndex = '-1'
+
             document.body.appendChild(v)
             return v
         }
@@ -148,7 +163,7 @@ export default function Experience({ isVisible = false, onVideosReady }) {
         const cyberpunk = makeVideo('/model/cyberpunk.mp4')
         const arcane = makeVideo('/model/arcane.mp4')
         const idle = makeVideo('/model/leagueScreens/DefeatScreen.mp4')
-        idle.play().catch(() => {})
+        idle.play().catch((err) => console.warn('idle initial play failed:', err?.name, err?.message))
 
         if (!tierSettings.playAmbientVideos) {
             // low tier: grab a single frame for the screen textures instead of
@@ -179,7 +194,6 @@ export default function Experience({ isVisible = false, onVideosReady }) {
         }
 
         // Fallback: if a video is slow/stalls, don't block forever.
-        // Give it a generous timeout, then let the app proceed anyway.
         const fallbackTimer = setTimeout(() => {
             if (!settled) {
                 settled = true
@@ -188,7 +202,6 @@ export default function Experience({ isVisible = false, onVideosReady }) {
         }, 15000)
 
         videos.forEach((v) => {
-            // readyState 4 (HAVE_ENOUGH_DATA) means it's already buffered
             if (v.readyState >= 3) {
                 markReady()
             } else {
@@ -196,8 +209,21 @@ export default function Experience({ isVisible = false, onVideosReady }) {
             }
         })
 
+        // ---- iOS Safari: force-(re)play all videos on the user's Wake Up
+        // gesture. Autoplay/programmatic play() calls made outside a user
+        // gesture are unreliable on iOS even when muted. ----
+        const forcePlayAll = () => {
+            videos.forEach((v) => {
+                v.play().catch((err) =>
+                    console.warn('iOS forced play failed:', v.src, err?.name, err?.message)
+                )
+            })
+        }
+        window.addEventListener('user-wakeup', forcePlayAll)
+
         return () => {
             clearTimeout(fallbackTimer)
+            window.removeEventListener('user-wakeup', forcePlayAll)
             videos.forEach((v) => v.removeEventListener('canplaythrough', markReady))
             Object.values(videoElsRef.current).forEach((v) => {
                 v.pause()
@@ -277,8 +303,8 @@ export default function Experience({ isVisible = false, onVideosReady }) {
 
         const { cyberpunk, arcane } = videoElsRef.current
         if (isVisible) {
-            cyberpunk?.play().catch(() => {})
-            arcane?.play().catch(() => {})
+            cyberpunk?.play().catch((err) => console.warn('cyberpunk play failed:', err?.name, err?.message))
+            arcane?.play().catch((err) => console.warn('arcane play failed:', err?.name, err?.message))
         } else {
             cyberpunk?.pause()
             arcane?.pause()
@@ -292,7 +318,7 @@ export default function Experience({ isVisible = false, onVideosReady }) {
         idle.src = matchOutcome
             ? '/model/leagueScreens/VictoryScreen.mp4'
             : '/model/leagueScreens/DefeatScreen.mp4'
-        idle.play().catch(() => {})
+        idle.play().catch((err) => console.warn('idle swap play failed:', err?.name, err?.message))
     }, [matchOutcome])
 
     const hasHitboxes = Object.values(hitboxes).some(Boolean)

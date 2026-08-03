@@ -52,6 +52,11 @@ function App() {
             console.warn('Audio playback failed:', error)
         })
 
+        // iOS Safari: nudge all video textures to (re)play from within this
+        // real user gesture, since autoplay outside a gesture is unreliable
+        // there even when muted.
+        window.dispatchEvent(new Event('user-wakeup'))
+
         // Wait for fade out before removing
         setTimeout(() => {
             setShowStartingScreen(false)
