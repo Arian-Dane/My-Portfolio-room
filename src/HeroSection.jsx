@@ -1,3 +1,4 @@
+import { useEffect, useRef } from "react";
 import { GitBranch, Link2, Mail, ArrowDown } from "lucide-react";
 
 const socialLinks = [
@@ -7,6 +8,33 @@ const socialLinks = [
 ];
 
 const HeroSection = () => {
+  const videoRef = useRef(null);
+
+  useEffect(() => {
+    const video = videoRef.current;
+
+    if (!video) return;
+
+    const attemptPlay = async () => {
+      try {
+        video.currentTime = 0;
+        await video.play();
+      } catch (error) {
+        console.warn("Hero video autoplay was blocked:", error);
+      }
+    };
+
+    if (video.readyState >= 2) {
+      attemptPlay();
+    } else {
+      video.addEventListener("canplay", attemptPlay, { once: true });
+    }
+
+    return () => {
+      video.removeEventListener("canplay", attemptPlay);
+    };
+  }, []);
+
   return (
     <section
       id="home"
@@ -15,10 +43,13 @@ const HeroSection = () => {
       {/* Background VIDEO */}
       <div className="absolute inset-0 z-0">
         <video
+          ref={videoRef}
           autoPlay
           loop
           muted
           playsInline
+          preload="metadata"
+          webkit-playsinline="true"
           className="w-full h-full object-cover"
         >
           <source src="/model/veo3.mp4" type="video/mp4" />
