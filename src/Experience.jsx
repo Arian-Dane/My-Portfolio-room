@@ -28,14 +28,13 @@ const EMPTY_HITBOXES = {
     experienceHitbox: null,
 }
 
-export default function Experience({ isVisible = false, onVideosReady }) {
+export default function Experience({ isVisible = false, onVideosReady, isMinimized = false }) {
     const room = useGLTF('/model/room.glb')
     const animations = useAnimations(room.animations, room.scene)
     const { gl } = useThree()
 
-    useRendererStats() // dev-only console logging of draw calls / tris / tex memory
+    useRendererStats()
 
-    // computed once per mount — device capability doesn't change mid-session
     const deviceTier = useMemo(() => getDeviceTier(), [])
     const tierSettings = TIER_SETTINGS[deviceTier]
     const isMobile = useMemo(
@@ -57,14 +56,11 @@ export default function Experience({ isVisible = false, onVideosReady }) {
     const videoElsRef = useRef({})
     const videoTexturesRef = useRef({})
 
-    // keep the latest onVideosReady in a ref so the video-loading effect
-    // doesn't need it in its dependency array (avoids re-running on every render)
     const onVideosReadyRef = useRef(onVideosReady)
     useEffect(() => {
         onVideosReadyRef.current = onVideosReady
     }, [onVideosReady])
 
-    // ---- fetch match outcome once ----
     useEffect(() => {
         let cancelled = false
         RiotApiCall()
@@ -77,7 +73,6 @@ export default function Experience({ isVisible = false, onVideosReady }) {
         return () => { cancelled = true }
     }, [])
 
-    // ---- play looping animations once they're available ----
     useEffect(() => {
         const { Chair_Spin, catt, Vac_Animation } = animations.actions
         if (Chair_Spin) { Chair_Spin.play(); Chair_Spin.timeScale = 0.9 }
@@ -85,7 +80,6 @@ export default function Experience({ isVisible = false, onVideosReady }) {
         if (Vac_Animation) { Vac_Animation.play(); Vac_Animation.timeScale = 0.5 }
     }, [animations])
 
-    // ---- load + configure baked textures once ----
     const rawTextures = useTexture(BAKE_URLS)
     const assets = useMemo(() => {
         const maxAniso = gl.capabilities.getMaxAnisotropy()
@@ -105,7 +99,6 @@ export default function Experience({ isVisible = false, onVideosReady }) {
         return rawTextures
     }, [rawTextures, gl, tierSettings])
 
-    // ---- one shared material per bake texture (not one per mesh) ----
     const bakedMaterials = useMemo(() => {
         const materials = {}
         for (const key of Object.keys(BAKE_URLS)) {
@@ -120,7 +113,6 @@ export default function Experience({ isVisible = false, onVideosReady }) {
         }
     }, [bakedMaterials])
 
-    // ---- create video elements + video textures exactly once ----
     useEffect(() => {
         const makeVideo = (src) => {
             const v = document.createElement('video')
@@ -131,12 +123,9 @@ export default function Experience({ isVisible = false, onVideosReady }) {
             v.defaultMuted = true
             v.playsInline = true
             v.setAttribute('playsinline', 'true')
-            v.setAttribute('webkit-playsinline', 'true') // older iOS Safari
+            v.setAttribute('webkit-playsinline', 'true')
             v.preload = 'auto'
 
-            // IMPORTANT: iOS Safari stops decoding frames for display:none
-            // videos, even if play() resolves successfully. Keep it in
-            // normal layout flow but visually invisible instead.
             v.style.position = 'absolute'
             v.style.top = '0'
             v.style.left = '0'
@@ -166,8 +155,6 @@ export default function Experience({ isVisible = false, onVideosReady }) {
         idle.play().catch((err) => console.warn('idle initial play failed:', err?.name, err?.message))
 
         if (!tierSettings.playAmbientVideos) {
-            // low tier: grab a single frame for the screen textures instead of
-            // running two decoders continuously alongside the idle monitor
             ;[cyberpunk, arcane].forEach((v) => {
                 v.play().then(() => v.pause()).catch(() => {})
             })
@@ -180,7 +167,6 @@ export default function Experience({ isVisible = false, onVideosReady }) {
             idle: makeVideoTexture(idle),
         }
 
-        // ---- track when each video is buffered enough to play smoothly ----
         const videos = [cyberpunk, arcane, idle]
         let readyCount = 0
         let settled = false
@@ -193,7 +179,6 @@ export default function Experience({ isVisible = false, onVideosReady }) {
             }
         }
 
-        // Fallback: if a video is slow/stalls, don't block forever.
         const fallbackTimer = setTimeout(() => {
             if (!settled) {
                 settled = true
@@ -209,9 +194,6 @@ export default function Experience({ isVisible = false, onVideosReady }) {
             }
         })
 
-        // ---- iOS Safari: force-(re)play all videos on the user's Wake Up
-        // gesture. Autoplay/programmatic play() calls made outside a user
-        // gesture are unreliable on iOS even when muted. ----
         const forcePlayAll = () => {
             videos.forEach((v) => {
                 v.play().catch((err) =>
@@ -235,7 +217,6 @@ export default function Experience({ isVisible = false, onVideosReady }) {
         }
     }, [tierSettings.playAmbientVideos])
 
-    // ---- traverse the scene exactly ONCE per model load ----
     useEffect(() => {
         if (!room?.scene) return
 
@@ -297,21 +278,35 @@ export default function Experience({ isVisible = false, onVideosReady }) {
         }
     }, [room.scene, bakedMaterials])
 
-    // ---- visibility controls play/pause for ambient videos (tier-gated) ----
+    // ---- visibility + minimized state control play/pause for ambient videos ----
+    // When minimized, cyberpunk/arcane are barely visible in a 320x240 corner
+    // canvas anyway, and freeing their decoders is what keeps the idle
+    // (League result) video + the Hero page's video from getting starved on
+    // iOS Safari's limited concurrent-video-decoder budget.
     useEffect(() => {
-        if (!tierSettings.playAmbientVideos) return // low tier: stays paused on its single frame
+        if (!tierSettings.playAmbientVideos) return
 
         const { cyberpunk, arcane } = videoElsRef.current
-        if (isVisible) {
+        const shouldPlayAmbient = isVisible && !isMinimized
+
+        if (shouldPlayAmbient) {
             cyberpunk?.play().catch((err) => console.warn('cyberpunk play failed:', err?.name, err?.message))
             arcane?.play().catch((err) => console.warn('arcane play failed:', err?.name, err?.message))
         } else {
             cyberpunk?.pause()
             arcane?.pause()
         }
-    }, [isVisible, tierSettings.playAmbientVideos])
+    }, [isVisible, isMinimized, tierSettings.playAmbientVideos])
 
-    // ---- swap the idle monitor's video once the match result is known ----
+    // ---- keep the idle/League monitor explicitly alive across minimize
+    // transitions — re-assert play() any time isMinimized changes, since
+    // this is the one screen that should always be visible ----
+    useEffect(() => {
+        const idle = videoElsRef.current.idle
+        if (!idle) return
+        idle.play().catch((err) => console.warn('idle re-play on minimize toggle failed:', err?.name, err?.message))
+    }, [isMinimized])
+
     useEffect(() => {
         const idle = videoElsRef.current.idle
         if (matchOutcome === null || !idle) return

@@ -7,7 +7,6 @@ import CollapsedSvg from './CollapsedSvg.jsx'
 import ExpandSvg from './ExpandSvg.jsx'
 import Webpage from "./Webpage.jsx"
 
-// module scope — created once when this file loads, not on every render
 const bgMusic = new Audio("/model/bg-music.MP3")
 bgMusic.preload = "auto"
 bgMusic.loop = true
@@ -31,8 +30,6 @@ function App() {
         setVideosReady(true)
     }, [])
 
-    // only flip from Loader -> StartingScreen once BOTH the GLTF/textures
-    // AND the videos are actually ready
     useEffect(() => {
         if (gltfReady && videosReady && showLoader) {
             setShowLoader(false)
@@ -41,7 +38,6 @@ function App() {
     }, [gltfReady, videosReady, showLoader])
 
     const handleWakeUp = () => {
-        // Start fading out the starting screen
         const startingScreen = document.querySelector('.starting-screen')
         if (startingScreen) {
             startingScreen.style.opacity = '0'
@@ -52,16 +48,12 @@ function App() {
             console.warn('Audio playback failed:', error)
         })
 
-        // iOS Safari: nudge all video textures to (re)play from within this
-        // real user gesture, since autoplay outside a gesture is unreliable
-        // there even when muted.
         window.dispatchEvent(new Event('user-wakeup'))
 
-        // Wait for fade out before removing
         setTimeout(() => {
             setShowStartingScreen(false)
             setIsExperienceVisible(true)
-        }, 100) // Slightly shorter than the transition to ensure smooth handoff
+        }, 100)
     }
 
     return (
@@ -74,7 +66,6 @@ function App() {
                 <StartingScreen onWakeUp={handleWakeUp} />
             )}
 
-            {/* Single persistent canvas that toggles size/position when minimized */}
             <div
                 style={{
                     position: 'absolute',
@@ -106,11 +97,14 @@ function App() {
                     }}>
 
                     {/* keep Experience mounted so hitboxes/refs persist */}
-                    <Experience isVisible={isExperienceVisible} onVideosReady={handleVideosReady} />
+                    <Experience
+                        isVisible={isExperienceVisible}
+                        onVideosReady={handleVideosReady}
+                        isMinimized={isCanvasMinimized}
+                    />
                 </Canvas>
             </div>
 
-            {/* Render webpage normally (no embedded canvas) when minimized */}
             {isCanvasMinimized && isExperienceVisible && (
                 <Webpage />
             )}
