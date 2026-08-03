@@ -28,7 +28,7 @@ const EMPTY_HITBOXES = {
     experienceHitbox: null,
 }
 
-export default function Experience({ isVisible = false }) {
+export default function Experience({ isVisible = false, onVideosReady }) {
     const room = useGLTF('/model/room.glb')
     const animations = useAnimations(room.animations, room.scene)
     const { gl } = useThree()
@@ -56,6 +56,13 @@ export default function Experience({ isVisible = false }) {
 
     const videoElsRef = useRef({})
     const videoTexturesRef = useRef({})
+
+    // keep the latest onVideosReady in a ref so the loading effect below
+    // doesn't need it in its dependency array (avoids re-running on every render)
+    const onVideosReadyRef = useRef(onVideosReady)
+    useEffect(() => {
+        onVideosReadyRef.current = onVideosReady
+    }, [onVideosReady])
 
     // ---- fetch match outcome once ----
     useEffect(() => {
@@ -158,7 +165,40 @@ export default function Experience({ isVisible = false }) {
             idle: makeVideoTexture(idle),
         }
 
+        // ---- track when each video is buffered enough to play smoothly ----
+        const videos = [cyberpunk, arcane, idle]
+        let readyCount = 0
+        let settled = false
+
+        const markReady = () => {
+            readyCount += 1
+            if (readyCount === videos.length && !settled) {
+                settled = true
+                onVideosReadyRef.current?.()
+            }
+        }
+
+        // Fallback: if a video is slow/stalls, don't block forever.
+        // Give it a generous timeout, then let the app proceed anyway.
+        const fallbackTimer = setTimeout(() => {
+            if (!settled) {
+                settled = true
+                onVideosReadyRef.current?.()
+            }
+        }, 15000)
+
+        videos.forEach((v) => {
+            // readyState 4 (HAVE_ENOUGH_DATA) means it's already buffered
+            if (v.readyState >= 3) {
+                markReady()
+            } else {
+                v.addEventListener('canplaythrough', markReady, { once: true })
+            }
+        })
+
         return () => {
+            clearTimeout(fallbackTimer)
+            videos.forEach((v) => v.removeEventListener('canplaythrough', markReady))
             Object.values(videoElsRef.current).forEach((v) => {
                 v.pause()
                 v.removeAttribute('src')

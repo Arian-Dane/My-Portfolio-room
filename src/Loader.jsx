@@ -5,7 +5,7 @@ import { useEffect } from 'react'
 
 export default function Loader({ onComplete }) {
   const { progress } = useProgress()
-  
+
   useEffect(() => {
     if (progress === 100) {
       setTimeout(() => {
@@ -13,7 +13,7 @@ export default function Loader({ onComplete }) {
       }, 1000) // Small delay to show 100%
     }
   }, [progress, onComplete])
-  
+
   return (
     <div className="fixed top-0 left-0 w-full h-full bg-black z-50 flex items-center justify-center">
       <div className="loader">
