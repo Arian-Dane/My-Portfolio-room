@@ -48,7 +48,7 @@ const HeroSection = () => {
           loop
           muted
           playsInline
-          preload="metadata"
+          preload="auto"
           webkit-playsinline="true"
           className="w-full h-full object-cover"
         >

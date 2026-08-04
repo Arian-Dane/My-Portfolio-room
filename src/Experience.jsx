@@ -152,6 +152,12 @@ export default function Experience({ isVisible = false, onVideosReady, isMinimiz
         const cyberpunk = makeVideo('/model/cyberpunk.mp4')
         const arcane = makeVideo('/model/arcane.mp4')
         const idle = makeVideo('/model/leagueScreens/DefeatScreen.mp4')
+        // Hero section background video — preloaded here (hidden, off-DOM-flow)
+        // purely to warm the browser's HTTP cache so HeroSection's own
+        // <video> element loads instantly instead of racing its own fetch.
+        // It is NOT mapped onto a Three.js mesh, so it gets no VideoTexture.
+        const hero = makeVideo('/model/veo3.mp4')
+
         idle.play().catch((err) => console.warn('idle initial play failed:', err?.name, err?.message))
 
         if (!tierSettings.playAmbientVideos) {
@@ -160,14 +166,14 @@ export default function Experience({ isVisible = false, onVideosReady, isMinimiz
             })
         }
 
-        videoElsRef.current = { cyberpunk, arcane, idle }
+        videoElsRef.current = { cyberpunk, arcane, idle, hero }
         videoTexturesRef.current = {
             cyberpunk: makeVideoTexture(cyberpunk),
             arcane: makeVideoTexture(arcane),
             idle: makeVideoTexture(idle),
         }
 
-        const videos = [cyberpunk, arcane, idle]
+        const videos = [cyberpunk, arcane, idle, hero]
         let readyCount = 0
         let settled = false
 

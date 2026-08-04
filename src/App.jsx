@@ -10,7 +10,7 @@ import Webpage from "./Webpage.jsx"
 const bgMusic = new Audio("/model/bg-music.MP3")
 bgMusic.preload = "auto"
 bgMusic.loop = true
-bgMusic.volume = 0.2
+bgMusic.volume = 0.5
 bgMusic.load()
 
 function App() {
