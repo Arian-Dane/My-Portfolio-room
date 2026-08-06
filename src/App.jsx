@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Canvas } from '@react-three/fiber'
+import { Volume2, VolumeX } from 'lucide-react'
 import Experience from './Experience.jsx'
 import Loader from './Loader.jsx'
 import StartingScreen from './StartingScreen.jsx'
@@ -22,6 +23,10 @@ function App() {
     const [isExperienceVisible, setIsExperienceVisible] = useState(false)
     const [isCanvasMinimized, setIsCanvasMinimized] = useState(false)
 
+    // Unmuted by default — the person can mute from the loader (and later
+    // wherever else this control is surfaced) before the music ever starts.
+    const [isMuted, setIsMuted] = useState(false)
+
     const handleGltfComplete = useCallback(() => {
         setGltfReady(true)
     }, [])
@@ -29,6 +34,20 @@ function App() {
     const handleVideosReady = useCallback(() => {
         setVideosReady(true)
     }, [])
+
+    const handleToggleMute = useCallback(() => {
+        console.log('handleToggleMute fired')
+        setIsMuted((prev) => {
+            console.log('isMuted changing from', prev, 'to', !prev)
+            return !prev
+        })
+    }, [])
+
+    // Keep the actual <audio> element's muted state in sync with the toggle,
+    // whether or not it's already playing.
+    useEffect(() => {
+        bgMusic.muted = isMuted
+    }, [isMuted])
 
     useEffect(() => {
         if (gltfReady && videosReady && showLoader) {
@@ -44,6 +63,7 @@ function App() {
             startingScreen.style.transition = 'opacity 0.5s ease-out'
         }
 
+        bgMusic.muted = isMuted
         bgMusic.play().catch((error) => {
             console.warn('Audio playback failed:', error)
         })
@@ -63,7 +83,11 @@ function App() {
             )}
 
             {showStartingScreen && (
-                <StartingScreen onWakeUp={handleWakeUp} />
+                <StartingScreen
+                    onWakeUp={handleWakeUp}
+                    isMuted={isMuted}
+                    onToggleMute={handleToggleMute}
+                />
             )}
 
             <div
@@ -89,6 +113,16 @@ function App() {
                     {isCanvasMinimized ? <ExpandSvg /> : <CollapsedSvg />}
                 </div>
 
+                <button
+                    type="button"
+                    onClick={handleToggleMute}
+                    aria-label={isMuted ? "Unmute" : "Mute"}
+                    aria-pressed={isMuted}
+                    className="absolute z-50 top-1 left-1 p-3 rounded-lg bg-white/5 border border-white/10 text-white/70 hover:text-white hover:bg-white/10 transition-all duration-300"
+                >
+                    {isMuted ? <VolumeX size={35} /> : <Volume2 size={35} />}
+                </button>
+
                 <Canvas
                     style={{ width: '100%', height: '100%', pointerEvents: 'auto' }}
                     gl={{
@@ -106,7 +140,7 @@ function App() {
             </div>
 
             {isCanvasMinimized && isExperienceVisible && (
-                <Webpage />
+                <Webpage isMuted={isMuted} onToggleMute={handleToggleMute} />
             )}
         </div>
     )

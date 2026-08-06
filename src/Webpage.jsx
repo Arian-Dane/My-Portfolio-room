@@ -13,12 +13,12 @@ import Testimonial from "./TestimonialsSection.jsx"
 import Contact from "./ContactSection.tsx"
 import Footer from "./FooterSection.jsx"
 
-export default function Webpage({ minimizedCanvas }) {
+export default function Webpage({ minimizedCanvas, isMuted, onToggleMute }) {
 
     return (
         <div className="webpage-root overflow-y-auto overflow-x-hidden h-screen w-screen relative ">
         
-            <CyberNav/>
+            <CyberNav isMuted={isMuted} onToggleMute={onToggleMute} />
             <HeroSection/>
             <AboutMePage />
             <Stats/>
