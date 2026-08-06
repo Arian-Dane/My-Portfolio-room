@@ -152,11 +152,16 @@ export default function Experience({ isVisible = false, onVideosReady, isMinimiz
         const cyberpunk = makeVideo('/model/cyberpunk.mp4')
         const arcane = makeVideo('/model/arcane.mp4')
         const idle = makeVideo('/model/leagueScreens/DefeatScreen.mp4')
-        // Hero section background video — preloaded here (hidden, off-DOM-flow)
-        // purely to warm the browser's HTTP cache so HeroSection's own
-        // <video> element loads instantly instead of racing its own fetch.
-        // It is NOT mapped onto a Three.js mesh, so it gets no VideoTexture.
-        const hero = makeVideo('/model/veo3.mp4')
+        // Hero section background video — created here WITHOUT a src. It's
+        // only visible after the user presses "wake up" and later scrolls to
+        // the Hero section, so it must not make any network request during
+        // the loading screen. Its src is assigned ONLY inside the
+        // 'user-wakeup' handler below (loadHeroVideo), i.e. the moment the
+        // person actually clicks through — not before, not automatically.
+        // It's never mapped onto a Three.js mesh (no VideoTexture); it exists
+        // purely to warm the browser's HTTP cache for HeroSection's own
+        // <video> element.
+        const hero = makeVideo()
 
         idle.play().catch((err) => console.warn('idle initial play failed:', err?.name, err?.message))
 
@@ -173,13 +178,19 @@ export default function Experience({ isVisible = false, onVideosReady, isMinimiz
             idle: makeVideoTexture(idle),
         }
 
-        const videos = [cyberpunk, arcane, idle, hero]
+        // Only the video visible the instant the loader closes needs to gate
+        // it. cyberpunk/arcane sit on monitors inside the room the user
+        // hasn't looked at yet, and hero isn't even created with a src (see
+        // above) — so only 'idle' blocks onVideosReady. This matters a lot on
+        // iOS Safari, which throttles concurrent video buffering hard.
+        const criticalVideos = [idle]
+
         let readyCount = 0
         let settled = false
 
         const markReady = () => {
             readyCount += 1
-            if (readyCount === videos.length && !settled) {
+            if (readyCount === criticalVideos.length && !settled) {
                 settled = true
                 onVideosReadyRef.current?.()
             }
@@ -190,18 +201,36 @@ export default function Experience({ isVisible = false, onVideosReady, isMinimiz
                 settled = true
                 onVideosReadyRef.current?.()
             }
-        }, 15000)
+        }, isMobile ? 6000 : 10000)
 
-        videos.forEach((v) => {
+        // 'canplay' just needs the first frame decodable — far cheaper than
+        // 'canplaythrough', which waits for enough buffer to estimate playing
+        // the whole file through without stalling.
+        criticalVideos.forEach((v) => {
             if (v.readyState >= 3) {
                 markReady()
             } else {
-                v.addEventListener('canplaythrough', markReady, { once: true })
+                v.addEventListener('canplay', markReady, { once: true })
             }
         })
 
+        // Kick off the hero video's fetch. Only ever called from the
+        // 'user-wakeup' handler below — never during the loading screen.
+        const loadHeroVideo = () => {
+            if (hero.src) return // already kicked off
+            hero.src = '/model/veo3.mp4'
+            hero.load()
+            // Nudge iOS into actually buffering it (a bare src + preload
+            // often isn't enough on iOS without a play() call), then pause
+            // immediately — HeroSection's own <video> owns real playback.
+            hero.play().then(() => hero.pause()).catch(() => {})
+        }
+
         const forcePlayAll = () => {
-            videos.forEach((v) => {
+            // This fires when the person presses "wake up" — the first
+            // moment it's safe for the hero video to start loading at all.
+            loadHeroVideo()
+            ;[cyberpunk, arcane, idle].forEach((v) => {
                 v.play().catch((err) =>
                     console.warn('iOS forced play failed:', v.src, err?.name, err?.message)
                 )
@@ -212,7 +241,7 @@ export default function Experience({ isVisible = false, onVideosReady, isMinimiz
         return () => {
             clearTimeout(fallbackTimer)
             window.removeEventListener('user-wakeup', forcePlayAll)
-            videos.forEach((v) => v.removeEventListener('canplaythrough', markReady))
+            criticalVideos.forEach((v) => v.removeEventListener('canplay', markReady))
             Object.values(videoElsRef.current).forEach((v) => {
                 v.pause()
                 v.removeAttribute('src')
