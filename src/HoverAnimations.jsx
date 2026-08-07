@@ -90,10 +90,23 @@ export default function HoverAnimations({ Hitboxes, Meshes }) {
             />
           )}
 
-          {/* Visible 3D object */}
-          {mesh.current && (
-            <primitive object={mesh.current} />
-          )}
+          {/*
+            NOTE: no <primitive object={mesh.current} /> here anymore.
+            These meshes are already rendered by `<primitive object=
+            {room.scene} />` in Experience.jsx — re-rendering them here
+            via <primitive> would call Object3D.add(), which silently
+            detaches them from their current parent (room.scene) and
+            reparents them under this component's subtree instead.
+            That reparenting is fragile: any incidental unmount of this
+            component (a canvas resize, a portal target change, a fast
+            refresh, etc.) tears them out with it, and traversal never
+            finds them again since they're no longer children of
+            room.scene. GSAP mutates mesh.current.scale / .position
+            directly, which is picked up on the next render frame
+            regardless of where the object lives in the React tree —
+            so this primitive was never required for the animation to
+            work, only for the (unwanted) reparenting.
+          */}
         </React.Fragment>
       );
     })}
@@ -115,10 +128,8 @@ export default function HoverAnimations({ Hitboxes, Meshes }) {
           />
         )}
 
-        {/* Visible 3D object */}
-        {mesh.current && (
-          <primitive object={mesh.current} />
-        )}
+        {/* Same as above — no duplicate <primitive> render for the
+            section glow meshes; they're already part of room.scene. */}
       </React.Fragment>
     ))}
 

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useLayoutEffect, useRef, useCallback } from 'react'
 import { Canvas } from '@react-three/fiber'
 import { Volume2, VolumeX } from 'lucide-react'
 import Experience from './Experience.jsx'
@@ -7,6 +7,7 @@ import StartingScreen from './StartingScreen.jsx'
 import CollapsedSvg from './CollapsedSvg.jsx'
 import ExpandSvg from './ExpandSvg.jsx'
 import Webpage from "./Webpage.jsx"
+import ResizeSync from './ResizeSync.jsx'
 
 const bgMusic = new Audio("/model/bg-music.MP3")
 
@@ -32,6 +33,20 @@ function App() {
     const [isPhone, setIsPhone] = useState(
         window.innerWidth <= 430
     )
+
+
+    // The canvas container is ALWAYS this exact DOM node — never
+    // reparented, never portaled, never conditionally rendered. Only
+    // its CSS changes.
+    const containerRef = useRef(null)
+
+    // The Webpage placeholder's DOM node, used only to *measure* where
+    // the inline slot currently is on screen — never as a mount target.
+    const [placeholderEl, setPlaceholderEl] = useState(null)
+
+    const handlePlaceholderRef = useCallback((node) => {
+        setPlaceholderEl(node)
+    }, [])
 
 
     useEffect(() => {
@@ -146,97 +161,62 @@ function App() {
 
 
 
+    // true only when we want the canvas to visually sit inline under
+    // the Hero section (phone + minimized)
+    const isPhoneMinimizedInline =
+        isPhone && isCanvasMinimized
 
 
-    const canvasStyle =
+
+    const dockedCanvasStyle =
 
         isPhone
 
         ?
 
-        (
+        {
 
-            isCanvasMinimized
+            // PHONE FULLSCREEN
+            // top/left/width/height are ALL explicit here, on
+            // purpose — this is the single source of truth for
+            // fullscreen sizing. React fully owns and resets these on
+            // every commit; nothing else should ever touch them while
+            // this branch is active.
 
-            ?
+            position:'relative',
 
-            {
+            top: '0px',
 
-                // PHONE MINIMIZED
-                // NORMAL PAGE BLOCK
+            left: '0px',
 
-                position: 'static',
+            display:'block',
 
-                display: 'block',
+            width:'100vw',
 
-                width: '100%',
+            height:'100vh',
 
-                height: '250px',
+            borderRadius:'0px',
 
-                marginTop: '20px',
+            overflow:'hidden',
 
-                borderRadius:'12px',
+            opacity:
+                showLoader ||
+                showStartingScreen
+                    ? 0
+                    : 1,
 
-                overflow:'hidden',
+            transition:
+                'all 0.4s cubic-bezier(0.4,0,0.2,1)',
 
-                opacity:
-                    showLoader ||
-                    showStartingScreen
-                        ? 0
-                        : 1,
+            pointerEvents:
+                showLoader ||
+                showStartingScreen
+                    ? 'none'
+                    : 'auto',
 
-                transition:
-                    'all 0.4s cubic-bezier(0.4,0,0.2,1)',
+            background:'#000000'
 
-                pointerEvents:
-                    showLoader ||
-                    showStartingScreen
-                        ? 'none'
-                        : 'auto',
-
-                background:'#000000'
-
-            }
-
-
-            :
-
-            {
-
-                // PHONE FULLSCREEN
-
-                position:'relative',
-
-                display:'block',
-
-                width:'100vw',
-
-                height:'100vh',
-
-                borderRadius:'0px',
-
-                overflow:'hidden',
-
-                opacity:
-                    showLoader ||
-                    showStartingScreen
-                        ? 0
-                        : 1,
-
-                transition:
-                    'all 0.4s cubic-bezier(0.4,0,0.2,1)',
-
-                pointerEvents:
-                    showLoader ||
-                    showStartingScreen
-                        ? 'none'
-                        : 'auto',
-
-                background:'#000000'
-
-            }
-
-        )
+        }
 
 
         :
@@ -251,6 +231,8 @@ function App() {
                 isCanvasMinimized
                     ? '50px'
                     : '0px',
+
+            left: 'auto',
 
             right:
                 isCanvasMinimized
@@ -307,6 +289,85 @@ function App() {
 
         }
 
+
+    // base style applied via React when docked inline (phone +
+    // minimized) — top/left/width/height start at sane defaults so
+    // there's never a frame with an unset/NaN position before the
+    // sync effect's first frame runs.
+    const inlineBaseStyle = {
+
+        position: 'fixed',
+
+        top: 0,
+
+        left: 0,
+
+        width: '100%',
+
+        height: '250px',
+
+        zIndex: 60,
+
+        borderRadius: '12px',
+
+        overflow: 'hidden',
+
+        background: '#000000',
+
+        opacity:
+            showLoader ||
+            showStartingScreen
+                ? 0
+                : 1,
+
+        pointerEvents:
+            showLoader ||
+            showStartingScreen
+                ? 'none'
+                : 'auto',
+
+    }
+
+
+
+    // Keeps the (never-reparented) canvas container's fixed position
+    // glued to wherever the Webpage placeholder currently sits on
+    // screen, including as the page scrolls. Only ever runs its
+    // imperative sync loop while docked inline. When NOT docked
+    // inline, this effect intentionally does nothing — dockedCanvasStyle
+    // already fully specifies top/left/width/height itself via React,
+    // so React's own commit has already applied the correct values by
+    // the time this effect runs. Manually clearing those values here
+    // (an earlier version of this effect did that) stomps on what
+    // React just set and collapses the fullscreen view back toward
+    // the old minimized size — that was the actual bug.
+    useLayoutEffect(() => {
+
+        const el = containerRef.current
+        if (!el) return
+
+        if (!isPhoneMinimizedInline || !placeholderEl) {
+            return
+        }
+
+        let rafId
+
+        const sync = () => {
+            const rect = placeholderEl.getBoundingClientRect()
+            el.style.top = `${rect.top}px`
+            el.style.left = `${rect.left}px`
+            el.style.width = `${rect.width}px`
+            el.style.height = `${rect.height}px`
+            rafId = requestAnimationFrame(sync)
+        }
+
+        rafId = requestAnimationFrame(sync)
+
+        return () => {
+            cancelAnimationFrame(rafId)
+        }
+
+    }, [isPhoneMinimizedInline, placeholderEl])
 
 
 
@@ -377,8 +438,17 @@ function App() {
 
 
 
+            <div
 
-            <div style={canvasStyle}>
+                ref={containerRef}
+
+                style={
+                    isPhoneMinimizedInline
+                        ? inlineBaseStyle
+                        : dockedCanvasStyle
+                }
+
+            >
 
 
                 <div
@@ -457,6 +527,12 @@ function App() {
 
                 >
 
+                    <ResizeSync
+                        watch={
+                            isPhoneMinimizedInline
+                        }
+                    />
+
                     <Experience
 
                         isVisible={
@@ -492,6 +568,14 @@ function App() {
 
                     onToggleMute={
                         handleToggleMute
+                    }
+
+                    isPhoneMinimizedInline={
+                        isPhoneMinimizedInline
+                    }
+
+                    placeholderRef={
+                        handlePlaceholderRef
                     }
 
                 />
