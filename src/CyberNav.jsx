@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { Menu, X, Volume2, VolumeX } from "lucide-react";
 
-const navItems = ["Home", "Projects", "Skills", "Contact"];
+const navItems = ["Home", "Projects" , "Contact"];
+// "Skills"
 
 const CyberNav = ({ isMuted, onToggleMute }) => {
   console.log('CyberNav rendered with isMuted =', isMuted, 'onToggleMute =', typeof onToggleMute)
