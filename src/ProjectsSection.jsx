@@ -7,38 +7,27 @@ const projects = [
     title: "Neural Dashboard",
     description: "AI-powered analytics dashboard with real-time data visualization and predictive modeling.",
     tech: ["React", "Three.js", "Python", "TensorFlow"],
-    image: "🧠",
+    image: "",
   },
   {
     title: "CyberChat",
     description: "End-to-end encrypted messaging platform with holographic UI and voice synthesis.",
     tech: ["TypeScript", "WebRTC", "Node.js", "Redis"],
-    image: "💬",
+    image: "",
   },
   {
-    title: "Neon Riders — 3D Short Film",
-    description: "Cyberpunk animated short film with fully rigged characters, VFX, and compositing in Blender.",
-    tech: ["Blender", "Cycles", "After Effects", "DaVinci"],
-    image: "🎬",
-  },
-  {
-    title: "Mecha Character Pack",
-    description: "Collection of 10 rigged mecha characters with PBR materials, ready for game engines.",
-    tech: ["Blender", "Substance Painter", "Unity", "Unreal"],
-    image: "🤖",
-  },
-  {
-    title: "QuantumPay",
-    description: "Next-gen payment gateway with blockchain integration and biometric authentication.",
-    tech: ["Solidity", "React", "Rust", "GraphQL"],
-    image: "⚡",
-  },
-  {
-    title: "SynthOS",
-    description: "Custom operating system interface built for creative professionals and developers.",
-    tech: ["Electron", "Rust", "WebGL", "WASM"],
-    image: "🖥️",
-  },
+  title: "Personal Portfolio Website",
+  description: "Designed and developed a responsive personal portfolio showcasing projects, skills, and interactive 3D elements with a focus on performance and user experience.",
+  tech: ["React", "JavaScript", "CSS", "Three.js"],
+  image: "",
+},
+{
+  title: "Task Management App",
+  description: "Built a full-stack task management application with user authentication, CRUD functionality, and a responsive dashboard for organizing daily tasks.",
+  tech: ["React", "Node.js", "Express", "MongoDB"],
+  image: "",
+},
+  
 ];
 
 const ProjectsSection = () => {

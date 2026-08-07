@@ -48,7 +48,7 @@ const FooterSection = () => {
         {/* Bottom */}
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="font-display text-[9px] tracking-[0.3em] text-foreground/20 uppercase">
-            © 2024 — Designed & Developed with 💜 and lots of ☕
+            © 2026 — Your journey starts here
           </p>
           <a
             href="#home"

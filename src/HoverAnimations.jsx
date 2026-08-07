@@ -8,7 +8,7 @@ export default function HoverAnimations({ Hitboxes, Meshes }) {
   const [activeSection,setActiveSection] = useState(false)
   
   const socialIcons = [
-    { name: 'github', hitbox: Hitboxes.githubHitbox, mesh: Meshes.githubMeshRef, URL:'https://github.com/Arian-Dane' },
+    { name: 'github', hitbox: Hitboxes.githubHitbox, mesh: Meshes.githubMeshRef, URL:'https://github.com' },
     { name: 'linkedIn', hitbox: Hitboxes.linkedInHitbox, mesh: Meshes.linkedInMeshRef, URL:'https://www.linkedin.com/' },
     { name: 'email', hitbox: Hitboxes.emailHitbox, mesh: Meshes.emailMeshRef },
   ]

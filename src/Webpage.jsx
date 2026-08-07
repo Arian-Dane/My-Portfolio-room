@@ -25,9 +25,9 @@ export default function Webpage({ minimizedCanvas, isMuted, onToggleMute }) {
             <Services/>
             <Projects/>
             <Process/>
-            <Skills/>
+            {/* <Skills/> */}
             <TechStack/>
-            <Testimonial/>
+            {/* <Testimonial/> */}
             <Contact/>
             <Footer/>
         

@@ -2,14 +2,14 @@ import { Terminal, Shield, Cpu, Zap, Code2, Braces } from "lucide-react";
 import "./AboutSection.css"
 
 const timeline = [
-  { year: "2024", title: "Senior Full-Stack Engineer", desc: "Leading AI-powered product development" },
+  { year: "2024", title: "Full-Stack Engineer", desc: "Leading AI-powered product development" },
   { year: "2022", title: "Full-Stack Developer", desc: "Built scalable SaaS platforms & APIs" },
   { year: "2020", title: "Frontend Developer", desc: "Crafted immersive web experiences with React & WebGL" },
-  { year: "2018", title: "Started Coding", desc: "First line of code → instant addiction" },
+  { year: "2018", title: "Started Coding", desc: "First line of code " },
 ];
 
 const traits = [
-  { icon: Terminal, label: "CLI Enthusiast" },
+  // { icon: Terminal, label: "CLI Enthusiast" },
   { icon: Shield, label: "Security Minded" },
   { icon: Cpu, label: "Performance Obsessed" },
   { icon: Zap, label: "Fast Learner" },
@@ -51,15 +51,14 @@ const AboutSection = () => {
                 <span className="text-primary">$</span> <span className="text-foreground/80">whoami</span>
               </p>
               <p className="pl-4">
-                A passionate full-stack developer & 3D artist who lives at the intersection of creativity and code.
+                A passionate full-stack developer & 3D artist.
                 I build immersive digital experiences and craft stylized characters & environments in Blender.
               </p>
               <p>
                 <span className="text-primary">$</span> <span className="text-foreground/80">cat philosophy.txt</span>
               </p>
               <p className="pl-4">
-                I believe great software is an art form — every pixel, every animation, every interaction
-                matters. My goal is to create products that feel alive and make users say "wow."
+                I believe great software is an art form. My goal is to create products that feel alive.
               </p>
               <p>
                 <span className="text-primary">$</span> <span className="text-foreground/80">echo $STATUS</span>
