@@ -356,7 +356,7 @@ export default function Experience({ isVisible = false, onVideosReady, isMinimiz
     return (
         <>
             <Lights />
-            <CameraControls isMobile={isMobile} />
+            <CameraControls isMobile={isMobile} isMinimized={isMinimized} />
             <primitive object={room.scene} />
 
             {hasHitboxes && (

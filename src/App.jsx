@@ -306,7 +306,10 @@ function App() {
 
         height: '250px',
 
-        zIndex: 60,
+        // kept below the desktop floating-widget's zIndex (60) on
+        // purpose — this only needs to clear other fixed-position
+        // page chrome (e.g. CyberNav), not sit above everything
+        zIndex: 5,
 
         borderRadius: '12px',
 
@@ -337,10 +340,7 @@ function App() {
     // inline, this effect intentionally does nothing — dockedCanvasStyle
     // already fully specifies top/left/width/height itself via React,
     // so React's own commit has already applied the correct values by
-    // the time this effect runs. Manually clearing those values here
-    // (an earlier version of this effect did that) stomps on what
-    // React just set and collapses the fullscreen view back toward
-    // the old minimized size — that was the actual bug.
+    // the time this effect runs.
     useLayoutEffect(() => {
 
         const el = containerRef.current
