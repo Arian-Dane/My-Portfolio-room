@@ -23,6 +23,7 @@
   right: 0;
   bottom: 0;
   display: block;
+  pointer-events: none;
 }
 
 .startButton:hover::after {
@@ -100,7 +101,3 @@
     transform: translate(0);
   }
 }
-
-
-
-

@@ -16,6 +16,13 @@ bgMusic.loop = true
 bgMusic.volume = 0.3
 bgMusic.load()
 
+// how long the fade-to-black takes
+const FADE_TO_BLACK_MS = 800
+// how long the screen stays fully black before revealing the scene
+const REVEAL_DELAY_MS = 3400
+// how long the fade-from-black (revealing the scene) takes
+const FADE_FROM_BLACK_MS = 800
+
 
 function App() {
 
@@ -28,6 +35,9 @@ function App() {
 
     const [isCanvasMinimized, setIsCanvasMinimized] = useState(false)
     const [isMuted, setIsMuted] = useState(false)
+
+    // drives the black transition overlay's opacity
+    const [showBlackOverlay, setShowBlackOverlay] = useState(false)
 
 
     const [isPhone, setIsPhone] = useState(
@@ -47,6 +57,13 @@ function App() {
     const handlePlaceholderRef = useCallback((node) => {
         setPlaceholderEl(node)
     }, [])
+
+
+    // Kept as a defensive backstop — not currently needed given how
+    // StartingScreen wires its two buttons as plain siblings, but
+    // harmless to leave in case a click ever fires out of order (e.g.
+    // via keyboard activation or assistive tech).
+    const suppressNextWakeUpRef = useRef(false)
 
 
     useEffect(() => {
@@ -81,7 +98,8 @@ function App() {
     }, [])
 
 
-    const handleToggleMute = useCallback(() => {
+    const handleToggleMute = useCallback((e) => {
+        e?.stopPropagation()
         setIsMuted(prev => !prev)
     }, [])
 
@@ -116,6 +134,12 @@ function App() {
 
     const handleWakeUp = () => {
 
+        if (suppressNextWakeUpRef.current) {
+            suppressNextWakeUpRef.current = false
+            return
+        }
+
+
         const startingScreen =
             document.querySelector(
                 '.starting-screen'
@@ -149,13 +173,28 @@ function App() {
         )
 
 
+        // If the person muted before waking up, there's no audio to
+        // build tension around — skip the black-screen fade/delay
+        // entirely and reveal the scene right away.
+        if (isMuted) {
+            setShowStartingScreen(false)
+            setIsExperienceVisible(true)
+            return
+        }
+
+
+        setShowBlackOverlay(true)
+
+
         setTimeout(() => {
 
             setShowStartingScreen(false)
 
             setIsExperienceVisible(true)
 
-        },100)
+            setShowBlackOverlay(false)
+
+        }, FADE_TO_BLACK_MS + REVEAL_DELAY_MS)
 
     }
 
@@ -434,6 +473,47 @@ function App() {
                 />
 
             }
+
+
+
+
+            {
+                // Black transition overlay. Always mounted (so the
+                // opacity transition can animate both in and out) —
+                // only its opacity/pointerEvents toggle.
+            }
+            <div
+
+                style={{
+
+                    position: 'fixed',
+
+                    inset: 0,
+
+                    background: '#000000',
+
+                    zIndex: 9999,
+
+                    opacity:
+                        showBlackOverlay
+                            ? 1
+                            : 0,
+
+                    transition:
+                        `opacity ${
+                            showBlackOverlay
+                                ? FADE_TO_BLACK_MS
+                                : FADE_FROM_BLACK_MS
+                        }ms ease-in-out`,
+
+                    pointerEvents:
+                        showBlackOverlay
+                            ? 'auto'
+                            : 'none',
+
+                }}
+
+            />
 
 
 
