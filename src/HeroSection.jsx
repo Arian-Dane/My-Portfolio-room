@@ -1,9 +1,9 @@
-import { useEffect, useRef } from "react";
+﻿import { useEffect, useRef } from "react";
 import { GitBranch, Link2, Mail, ArrowDown } from "lucide-react";
 
 const socialLinks = [
-  { icon: GitBranch, href: "#", label: "GitHub" },
-  { icon: Link2, href: "#", label: "LinkedIn" },
+  { icon: GitBranch, href: "https://github.com/", label: "GitHub" },
+  { icon: Link2, href: "https://www.linkedin.com/", label: "LinkedIn" },
   { icon: Mail, href: "#", label: "Email" },
 ];
 
@@ -124,6 +124,8 @@ const HeroSection = () => {
                 key={label}
                 href={href}
                 aria-label={label}
+                target={label === "GitHub" || label === "LinkedIn" ? "_blank" : undefined}
+                rel={label === "GitHub" || label === "LinkedIn" ? "noreferrer noopener" : undefined}
                 className="group relative p-3 rounded-lg glass-card icon-glow transition-all duration-500"
               >
                 <Icon

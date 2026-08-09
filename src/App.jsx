@@ -9,12 +9,28 @@ import ExpandSvg from './ExpandSvg.jsx'
 import Webpage from "./Webpage.jsx"
 import ResizeSync from './ResizeSync.jsx'
 
-const bgMusic = new Audio("/model/bg-music.MP3")
+const bgMusicIntro = new Audio("/model/bg-music.MP3")
+const bgMusicLoop = new Audio("/model/bg-loop.MP3")
 
-bgMusic.preload = "auto"
-bgMusic.loop = true
-bgMusic.volume = 0.3
-bgMusic.load()
+bgMusicIntro.preload = "auto"
+bgMusicIntro.loop = false
+bgMusicIntro.volume = 0.3
+bgMusicIntro.load()
+
+bgMusicLoop.preload = "auto"
+bgMusicLoop.loop = true
+bgMusicLoop.volume = 0.3
+bgMusicLoop.load()
+
+// bg-music.MP3 has the welcome voice line and plays once, on
+// wake-up. When it ends, hand off to bg-loop.MP3 (no welcome
+// message) which then loops natively forever.
+bgMusicIntro.addEventListener('ended', () => {
+    bgMusicLoop.currentTime = 0
+    bgMusicLoop.play().catch((error) =>
+        console.warn("Background loop audio failed to start:", error)
+    )
+})
 
 // how long the fade-to-black takes
 const FADE_TO_BLACK_MS = 800
@@ -106,7 +122,8 @@ function App() {
 
 
     useEffect(() => {
-        bgMusic.muted = isMuted
+        bgMusicIntro.muted = isMuted
+        bgMusicLoop.muted = isMuted
     }, [isMuted])
 
 
@@ -156,10 +173,10 @@ function App() {
         }
 
 
-        bgMusic.muted = isMuted
+        bgMusicIntro.muted = isMuted
 
 
-        bgMusic.play()
+        bgMusicIntro.play()
             .catch(error =>
                 console.warn(
                     "Audio failed",

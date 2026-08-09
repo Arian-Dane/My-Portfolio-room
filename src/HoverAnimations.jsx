@@ -72,7 +72,7 @@ export default function HoverAnimations({ Hitboxes, Meshes }) {
     
     {socialIcons.map(({ name, hitbox, mesh, URL }) => {
       const socialLink = () => {
-        if (URL) window.location.href = URL;
+        if (URL) window.open(URL, '_blank');
       }
 
       return (
