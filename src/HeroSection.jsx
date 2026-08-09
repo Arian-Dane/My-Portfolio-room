@@ -1,10 +1,10 @@
-﻿import { useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 import { GitBranch, Link2, Mail, ArrowDown } from "lucide-react";
 
 const socialLinks = [
   { icon: GitBranch, href: "https://github.com/", label: "GitHub" },
   { icon: Link2, href: "https://www.linkedin.com/", label: "LinkedIn" },
-  { icon: Mail, href: "#", label: "Email" },
+  { icon: Mail, href: "#contact", label: "Email" },
 ];
 
 const HeroSection = () => {
@@ -34,6 +34,13 @@ const HeroSection = () => {
       video.removeEventListener("canplay", attemptPlay);
     };
   }, []);
+
+  const handleSocialClick = (e, label) => {
+    if (label === "Email") {
+      e.preventDefault();
+      document.getElementById("contact")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  };
 
   return (
     <section
@@ -123,6 +130,7 @@ const HeroSection = () => {
               <a
                 key={label}
                 href={href}
+                onClick={(e) => handleSocialClick(e, label)}
                 aria-label={label}
                 target={label === "GitHub" || label === "LinkedIn" ? "_blank" : undefined}
                 rel={label === "GitHub" || label === "LinkedIn" ? "noreferrer noopener" : undefined}

@@ -22,9 +22,6 @@ bgMusicLoop.loop = true
 bgMusicLoop.volume = 0.3
 bgMusicLoop.load()
 
-// bg-music.MP3 has the welcome voice line and plays once, on
-// wake-up. When it ends, hand off to bg-loop.MP3 (no welcome
-// message) which then loops natively forever.
 bgMusicIntro.addEventListener('ended', () => {
     bgMusicLoop.currentTime = 0
     bgMusicLoop.play().catch((error) =>
@@ -32,11 +29,8 @@ bgMusicIntro.addEventListener('ended', () => {
     )
 })
 
-// how long the fade-to-black takes
 const FADE_TO_BLACK_MS = 800
-// how long the screen stays fully black before revealing the scene
 const REVEAL_DELAY_MS = 3400
-// how long the fade-from-black (revealing the scene) takes
 const FADE_FROM_BLACK_MS = 800
 
 
@@ -52,8 +46,13 @@ function App() {
     const [isCanvasMinimized, setIsCanvasMinimized] = useState(false)
     const [isMuted, setIsMuted] = useState(false)
 
-    // drives the black transition overlay's opacity
     const [showBlackOverlay, setShowBlackOverlay] = useState(false)
+
+    // NEW: id of a section (e.g. 'contact') to scroll to once the
+    // Webpage view is actually mounted and on screen. Set by any
+    // trigger that both minimizes the canvas AND wants to jump to a
+    // specific section — currently just the email mesh/icon.
+    const [pendingScrollTarget, setPendingScrollTarget] = useState(null)
 
 
     const [isPhone, setIsPhone] = useState(
@@ -61,13 +60,8 @@ function App() {
     )
 
 
-    // The canvas container is ALWAYS this exact DOM node — never
-    // reparented, never portaled, never conditionally rendered. Only
-    // its CSS changes.
     const containerRef = useRef(null)
 
-    // The Webpage placeholder's DOM node, used only to *measure* where
-    // the inline slot currently is on screen — never as a mount target.
     const [placeholderEl, setPlaceholderEl] = useState(null)
 
     const handlePlaceholderRef = useCallback((node) => {
@@ -75,10 +69,6 @@ function App() {
     }, [])
 
 
-    // Kept as a defensive backstop — not currently needed given how
-    // StartingScreen wires its two buttons as plain siblings, but
-    // harmless to leave in case a click ever fires out of order (e.g.
-    // via keyboard activation or assistive tech).
     const suppressNextWakeUpRef = useRef(false)
 
 
@@ -118,6 +108,36 @@ function App() {
         e?.stopPropagation()
         setIsMuted(prev => !prev)
     }, [])
+
+
+    // NEW: fired when the person clicks the email mesh in the 3D
+    // scene. Minimizes the canvas (if not already) and queues up a
+    // scroll to the contact section once the webpage view is ready.
+    const handleEmailMeshClick = useCallback(() => {
+        setIsCanvasMinimized(true)
+        setPendingScrollTarget('contact')
+    }, [])
+
+
+    // NEW: once the canvas is minimized AND the experience is
+    // visible (meaning <Webpage> — and everything inside it,
+    // including the contact section — is actually mounted), scroll to
+    // whatever section was requested. The extra frame delay gives the
+    // just-mounted DOM a chance to lay out before we measure it.
+    useEffect(() => {
+
+        if (!pendingScrollTarget) return
+        if (!(isCanvasMinimized && isExperienceVisible)) return
+
+        const rafId = requestAnimationFrame(() => {
+            const el = document.getElementById(pendingScrollTarget)
+            el?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+            setPendingScrollTarget(null)
+        })
+
+        return () => cancelAnimationFrame(rafId)
+
+    }, [pendingScrollTarget, isCanvasMinimized, isExperienceVisible])
 
 
 
@@ -190,9 +210,6 @@ function App() {
         )
 
 
-        // If the person muted before waking up, there's no audio to
-        // build tension around — skip the black-screen fade/delay
-        // entirely and reveal the scene right away.
         if (isMuted) {
             setShowStartingScreen(false)
             setIsExperienceVisible(true)
@@ -217,8 +234,6 @@ function App() {
 
 
 
-    // true only when we want the canvas to visually sit inline under
-    // the Hero section (phone + minimized)
     const isPhoneMinimizedInline =
         isPhone && isCanvasMinimized
 
@@ -231,13 +246,6 @@ function App() {
         ?
 
         {
-
-            // PHONE FULLSCREEN
-            // top/left/width/height are ALL explicit here, on
-            // purpose — this is the single source of truth for
-            // fullscreen sizing. React fully owns and resets these on
-            // every commit; nothing else should ever touch them while
-            // this branch is active.
 
             position:'relative',
 
@@ -278,8 +286,6 @@ function App() {
         :
 
         {
-
-            // DESKTOP
 
             position:'absolute',
 
@@ -346,10 +352,6 @@ function App() {
         }
 
 
-    // base style applied via React when docked inline (phone +
-    // minimized) — top/left/width/height start at sane defaults so
-    // there's never a frame with an unset/NaN position before the
-    // sync effect's first frame runs.
     const inlineBaseStyle = {
 
         position: 'fixed',
@@ -362,9 +364,6 @@ function App() {
 
         height: '250px',
 
-        // kept below the desktop floating-widget's zIndex (60) on
-        // purpose — this only needs to clear other fixed-position
-        // page chrome (e.g. CyberNav), not sit above everything
         zIndex: 5,
 
         borderRadius: '12px',
@@ -389,14 +388,6 @@ function App() {
 
 
 
-    // Keeps the (never-reparented) canvas container's fixed position
-    // glued to wherever the Webpage placeholder currently sits on
-    // screen, including as the page scrolls. Only ever runs its
-    // imperative sync loop while docked inline. When NOT docked
-    // inline, this effect intentionally does nothing — dockedCanvasStyle
-    // already fully specifies top/left/width/height itself via React,
-    // so React's own commit has already applied the correct values by
-    // the time this effect runs.
     useLayoutEffect(() => {
 
         const el = containerRef.current
@@ -494,11 +485,6 @@ function App() {
 
 
 
-            {
-                // Black transition overlay. Always mounted (so the
-                // opacity transition can animate both in and out) —
-                // only its opacity/pointerEvents toggle.
-            }
             <div
 
                 style={{
@@ -642,6 +628,10 @@ function App() {
 
                         isMinimized={
                             isCanvasMinimized
+                        }
+
+                        onEmailClick={
+                            handleEmailMeshClick
                         }
 
                     />

@@ -28,7 +28,7 @@ const EMPTY_HITBOXES = {
     experienceHitbox: null,
 }
 
-export default function Experience({ isVisible = false, onVideosReady, isMinimized = false }) {
+export default function Experience({ isVisible = false, onVideosReady, isMinimized = false, onEmailClick }) {
     const room = useGLTF('/model/room.glb')
     const animations = useAnimations(room.animations, room.scene)
     const { gl } = useThree()
@@ -152,15 +152,6 @@ export default function Experience({ isVisible = false, onVideosReady, isMinimiz
         const cyberpunk = makeVideo('/model/cyberpunk.mp4')
         const arcane = makeVideo('/model/arcane.mp4')
         const idle = makeVideo('/model/leagueScreens/DefeatScreen.mp4')
-        // Hero section background video — created here WITHOUT a src. It's
-        // only visible after the user presses "wake up" and later scrolls to
-        // the Hero section, so it must not make any network request during
-        // the loading screen. Its src is assigned ONLY inside the
-        // 'user-wakeup' handler below (loadHeroVideo), i.e. the moment the
-        // person actually clicks through — not before, not automatically.
-        // It's never mapped onto a Three.js mesh (no VideoTexture); it exists
-        // purely to warm the browser's HTTP cache for HeroSection's own
-        // <video> element.
         const hero = makeVideo()
 
         idle.play().catch((err) => console.warn('idle initial play failed:', err?.name, err?.message))
@@ -178,11 +169,6 @@ export default function Experience({ isVisible = false, onVideosReady, isMinimiz
             idle: makeVideoTexture(idle),
         }
 
-        // Only the video visible the instant the loader closes needs to gate
-        // it. cyberpunk/arcane sit on monitors inside the room the user
-        // hasn't looked at yet, and hero isn't even created with a src (see
-        // above) — so only 'idle' blocks onVideosReady. This matters a lot on
-        // iOS Safari, which throttles concurrent video buffering hard.
         const criticalVideos = [idle]
 
         let readyCount = 0
@@ -203,9 +189,6 @@ export default function Experience({ isVisible = false, onVideosReady, isMinimiz
             }
         }, isMobile ? 6000 : 10000)
 
-        // 'canplay' just needs the first frame decodable — far cheaper than
-        // 'canplaythrough', which waits for enough buffer to estimate playing
-        // the whole file through without stalling.
         criticalVideos.forEach((v) => {
             if (v.readyState >= 3) {
                 markReady()
@@ -214,21 +197,14 @@ export default function Experience({ isVisible = false, onVideosReady, isMinimiz
             }
         })
 
-        // Kick off the hero video's fetch. Only ever called from the
-        // 'user-wakeup' handler below — never during the loading screen.
         const loadHeroVideo = () => {
-            if (hero.src) return // already kicked off
+            if (hero.src) return
             hero.src = '/model/veo3.mp4'
             hero.load()
-            // Nudge iOS into actually buffering it (a bare src + preload
-            // often isn't enough on iOS without a play() call), then pause
-            // immediately — HeroSection's own <video> owns real playback.
             hero.play().then(() => hero.pause()).catch(() => {})
         }
 
         const forcePlayAll = () => {
-            // This fires when the person presses "wake up" — the first
-            // moment it's safe for the hero video to start loading at all.
             loadHeroVideo()
             ;[cyberpunk, arcane, idle].forEach((v) => {
                 v.play().catch((err) =>
@@ -313,11 +289,6 @@ export default function Experience({ isVisible = false, onVideosReady, isMinimiz
         }
     }, [room.scene, bakedMaterials])
 
-    // ---- visibility + minimized state control play/pause for ambient videos ----
-    // When minimized, cyberpunk/arcane are barely visible in a 320x240 corner
-    // canvas anyway, and freeing their decoders is what keeps the idle
-    // (League result) video + the Hero page's video from getting starved on
-    // iOS Safari's limited concurrent-video-decoder budget.
     useEffect(() => {
         if (!tierSettings.playAmbientVideos) return
 
@@ -333,9 +304,6 @@ export default function Experience({ isVisible = false, onVideosReady, isMinimiz
         }
     }, [isVisible, isMinimized, tierSettings.playAmbientVideos])
 
-    // ---- keep the idle/League monitor explicitly alive across minimize
-    // transitions — re-assert play() any time isMinimized changes, since
-    // this is the one screen that should always be visible ----
     useEffect(() => {
         const idle = videoElsRef.current.idle
         if (!idle) return
@@ -370,6 +338,7 @@ export default function Experience({ isVisible = false, onVideosReady, isMinimiz
                         contactMeMeshRef,
                         experienceMeshRef,
                     }}
+                    onEmailClick={onEmailClick}
                 />
             )}
         </>

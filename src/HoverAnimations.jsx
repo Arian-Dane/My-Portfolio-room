@@ -2,7 +2,7 @@ import gsap from "gsap"
 import React, {useState} from "react"
 import CameraSections from "./CameraSections.jsx"
 
-export default function HoverAnimations({ Hitboxes, Meshes }) {
+export default function HoverAnimations({ Hitboxes, Meshes, onEmailClick }) {
 
   const [selectedSection,setSelectedSection] = useState(null)
   const [activeSection,setActiveSection] = useState(false)
@@ -25,12 +25,10 @@ export default function HoverAnimations({ Hitboxes, Meshes }) {
     
     const mesh = meshRef.current
 
-    // Remember starting position
     if (!mesh.userData.startingY) {
       mesh.userData.startingY = mesh.position.y
     }
 
-    // Scale animation
     gsap.to(mesh.scale, {
       x: isHovering ? 1.2 : 1,
       y: isHovering ? 1.2 : 1,
@@ -38,21 +36,17 @@ export default function HoverAnimations({ Hitboxes, Meshes }) {
       duration: 0.3
     })
     
-    // Float animation (move up/down)
     gsap.to(mesh.position, {
       y: isHovering ? mesh.userData.startingY + 2.5 : mesh.userData.startingY,
       duration: 0.3
     })
 
-    // Change cursor
     document.body.style.cursor = isHovering ? "pointer" : "default"
   }
 
-  // Make section buttons bigger only
   const animateSection = (meshRef, isHovering) => {
     if (!meshRef.current) return
     
-    // Scale animation 
     gsap.to(meshRef.current.scale, {
       x: isHovering ? 1.5 : 1,
       y: isHovering ? 1.5 : 1,
@@ -60,7 +54,6 @@ export default function HoverAnimations({ Hitboxes, Meshes }) {
       duration: 0.3
     })
     
-    // Change cursor
     document.body.style.cursor = isHovering ? "pointer" : "default"
   }
 
@@ -72,6 +65,14 @@ export default function HoverAnimations({ Hitboxes, Meshes }) {
     
     {socialIcons.map(({ name, hitbox, mesh, URL }) => {
       const socialLink = () => {
+        // The email icon has no external URL — instead of opening a
+        // tab, it minimizes the canvas and scrolls the page down to
+        // the contact section (handled up in App via onEmailClick).
+        if (name === 'email') {
+          onEmailClick?.()
+          return
+        }
+
         if (URL) window.open(URL, '_blank');
       }
 
