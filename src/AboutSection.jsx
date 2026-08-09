@@ -2,8 +2,8 @@ import { Terminal, Shield, Cpu, Zap, Code2, Braces } from "lucide-react";
 import "./AboutSection.css"
 
 const timeline = [
-  { year: "2024", title: "Full-Stack Engineer", desc: "Leading AI-powered product development" },
-  { year: "2022", title: "Full-Stack Developer", desc: "Built scalable SaaS platforms & APIs" },
+  { year: "2026", title: "BSc Computer Science Graduate", desc: "Graduated with a degree in Computer Science" },
+  { year: "2024", title: "Full-Stack Developer", desc: "Built scalable SaaS platforms & APIs" },
   { year: "2020", title: "Frontend Developer", desc: "Crafted immersive web experiences with React & WebGL" },
   { year: "2018", title: "Started Coding", desc: "First line of code " },
 ];
@@ -11,7 +11,7 @@ const timeline = [
 const traits = [
   // { icon: Terminal, label: "CLI Enthusiast" },
   { icon: Shield, label: "Security Minded" },
-  { icon: Cpu, label: "Performance Obsessed" },
+  { icon: Cpu, label: "Performance" },
   { icon: Zap, label: "Fast Learner" },
   { icon: Code2, label: "Clean Code" },
   { icon: Braces, label: "Open Source" },

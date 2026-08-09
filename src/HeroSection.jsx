@@ -111,7 +111,7 @@ const HeroSection = () => {
           <p className="font-body text-lg sm:text-xl md:text-2xl text-foreground/60 tracking-wide mb-10 opacity-0 animate-fade-in-up">
             Full-Stack Developer{" "}
             <span className="neon-text-purple">|</span> JavaScript, React,
-            Three.js, AI
+            Three.js
           </p>
 
           {/* CTA */}

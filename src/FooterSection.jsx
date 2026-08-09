@@ -17,7 +17,7 @@ const FooterSection = () => {
 
           {/* Nav links */}
           <div className="flex flex-wrap justify-center gap-6">
-            {["Home", "About", "3D", "Projects", "Contact"].map((item) => (
+            {["Home", "About", "Projects", "Contact"].map((item) => (
               <a
                 key={item}
                 href={`#${item.toLowerCase()}`}
@@ -30,7 +30,7 @@ const FooterSection = () => {
 
           {/* Socials */}
           <div className="flex gap-4">
-            {[GitBranch, Link, Mail].map((Icon, i) => (
+            {[GitBranch, Link].map((Icon, i) => (
               <a
                 key={i}
                 href="#"
@@ -48,7 +48,7 @@ const FooterSection = () => {
         {/* Bottom */}
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="font-display text-[9px] tracking-[0.3em] text-foreground/20 uppercase">
-            © 2026 — Your journey starts here
+            Your journey starts here
           </p>
           <a
             href="#home"
