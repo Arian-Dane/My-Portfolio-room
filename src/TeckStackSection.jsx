@@ -9,11 +9,11 @@ const techCategories = [
   },
   {
     title: "3D & Creative",
-    items: ["Blender", "Cycles", "EEVEE", "Geometry Nodes", "Substance Painter", "ZBrush"],
+    items: ["Blender", "Cycles", "EEVEE", "Geometry Nodes", "Substance Painter", "Animation"],
   },
   {
     title: "DevOps & Tools",
-    items: ["Docker", "AWS", "Git", "CI/CD", "Linux", "Figma"],
+    items: ["Docker", "AWS", "Git", "CI/CD", "Figma"],
   },
 ];
 
