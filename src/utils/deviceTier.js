@@ -30,32 +30,29 @@ export function getDeviceTier() {
     return 'mid'
 }
 
+// Mipmaps and antialiasing stay on for every tier: the baked textures are
+// detailed enough that turning either off causes visible shimmering/jaggies.
+//
+// downscaleBigBakes: swap the two 4096² bakes (bake1, bake5) for the 2048²
+// copies in /model/mobile. Those two alone are ~170MB of GPU memory with
+// mipmaps, which is what stalls mobile WebGL; the 2048² bakes stay full-res.
 export const TIER_SETTINGS = {
-    // bakeDir: half-resolution bakes live in /model/mobile — the full set
-    // (two 4096² + five 2048²) needs ~280MB of GPU memory with mipmaps,
-    // which is enough to stall or crash mobile WebGL.
     low: {
-        maxAnisotropy: 1,
-        useMipmaps: false,
-        playAmbientVideos: false, // only the idle/league monitor plays
-        bakeDir: '/model/mobile',
-        dpr: [1, 1.5],
-        antialias: false,
-    },
-    mid: {
         maxAnisotropy: 4,
         useMipmaps: true,
+        playAmbientVideos: false, // only the idle/league monitor plays
+        downscaleBigBakes: true,
+    },
+    mid: {
+        maxAnisotropy: 8,
+        useMipmaps: true,
         playAmbientVideos: true,
-        bakeDir: '/model/mobile',
-        dpr: [1, 1.75],
-        antialias: true,
+        downscaleBigBakes: true,
     },
     high: {
         maxAnisotropy: 16,
         useMipmaps: true,
         playAmbientVideos: true,
-        bakeDir: '/model',
-        dpr: [1, 2],
-        antialias: true,
+        downscaleBigBakes: false,
     },
 }

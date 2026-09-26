@@ -8,9 +8,6 @@ import CollapsedSvg from './CollapsedSvg.jsx'
 import ExpandSvg from './ExpandSvg.jsx'
 import Webpage from "./Webpage.jsx"
 import ResizeSync from './ResizeSync.jsx'
-import { getDeviceTier, TIER_SETTINGS } from './utils/deviceTier.js'
-
-const tierSettings = TIER_SETTINGS[getDeviceTier()]
 
 const bgMusicIntro = new Audio("/model/bg-music.MP3")
 const bgMusicLoop = new Audio("/model/bg-loop.MP3")
@@ -611,10 +608,8 @@ function App() {
                         height:'100%'
                     }}
 
-                    dpr={tierSettings.dpr}
-
                     gl={{
-                        antialias:tierSettings.antialias,
+                        antialias:true,
                         alpha:false,
                         powerPreference:'high-performance'
                     }}

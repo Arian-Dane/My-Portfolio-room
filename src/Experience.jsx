@@ -11,8 +11,15 @@ import { useRendererStats } from './hooks/useRendererStats.js'
 
 const BAKE_KEYS = ['bake1', 'bake2', 'bake3', 'bake4', 'bake5', 'bake6', 'bake7']
 
-const bakeUrls = (dir) =>
-    Object.fromEntries(BAKE_KEYS.map((key) => [key, `${dir}/${key}.webp`]))
+const BIG_BAKES = ['bake1', 'bake5']
+
+const bakeUrls = (downscaleBigBakes) =>
+    Object.fromEntries(BAKE_KEYS.map((key) => [
+        key,
+        downscaleBigBakes && BIG_BAKES.includes(key)
+            ? `/model/mobile/${key}.webp`
+            : `/model/${key}.webp`,
+    ]))
 
 const EMPTY_HITBOXES = {
     githubHitbox: null,
@@ -75,7 +82,7 @@ export default function Experience({ isVisible = false, onVideosReady, isMinimiz
         if (Vac_Animation) { Vac_Animation.play(); Vac_Animation.timeScale = 0.5 }
     }, [animations])
 
-    const rawTextures = useTexture(useMemo(() => bakeUrls(tierSettings.bakeDir), [tierSettings]))
+    const rawTextures = useTexture(useMemo(() => bakeUrls(tierSettings.downscaleBigBakes), [tierSettings]))
     const assets = useMemo(() => {
         const maxAniso = gl.capabilities.getMaxAnisotropy()
         const anisotropy = Math.min(maxAniso, tierSettings.maxAnisotropy)
