@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import { GitBranch, Link2, Mail, ArrowDown } from "lucide-react";
+import { getHeroVideo } from "./heroVideo.js";
 
 const socialLinks = [
   { icon: GitBranch, href: "https://github.com/", label: "GitHub" },
@@ -8,30 +9,23 @@ const socialLinks = [
 ];
 
 const HeroSection = () => {
-  const videoRef = useRef(null);
+  const videoContainerRef = useRef(null);
 
+  // Reuse the pre-buffered hero video (see heroVideo.js) so it plays
+  // instantly instead of loading from scratch on every mount.
   useEffect(() => {
-    const video = videoRef.current;
+    const container = videoContainerRef.current;
+    if (!container) return;
 
-    if (!video) return;
-
-    const attemptPlay = async () => {
-      try {
-        video.currentTime = 0;
-        await video.play();
-      } catch (error) {
-        console.warn("Hero video autoplay was blocked:", error);
-      }
-    };
-
-    if (video.readyState >= 2) {
-      attemptPlay();
-    } else {
-      video.addEventListener("canplay", attemptPlay, { once: true });
-    }
+    const video = getHeroVideo();
+    container.prepend(video);
+    video.play().catch((error) => {
+      console.warn("Hero video autoplay was blocked:", error);
+    });
 
     return () => {
-      video.removeEventListener("canplay", attemptPlay);
+      video.pause();
+      video.remove();
     };
   }, []);
 
@@ -48,20 +42,7 @@ const HeroSection = () => {
       className="relative min-h-screen flex items-center overflow-hidden p-8"
     >
       {/* Background VIDEO */}
-      <div className="absolute inset-0 z-0">
-        <video
-          ref={videoRef}
-          autoPlay
-          loop
-          muted
-          playsInline
-          preload="auto"
-          poster="/model/veo3-poster.webp"
-          webkit-playsinline="true"
-          className="w-full h-full object-cover"
-        >
-          <source src="/model/veo3.mp4" type="video/mp4" />
-        </video>
+      <div ref={videoContainerRef} className="absolute inset-0 z-0">
 
         {/* PINK CENTER GLOW */}
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(236,72,153,0.10),transparent_55%)]" />

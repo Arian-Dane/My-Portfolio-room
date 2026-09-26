@@ -8,6 +8,7 @@ import CollapsedSvg from './CollapsedSvg.jsx'
 import ExpandSvg from './ExpandSvg.jsx'
 import Webpage from "./Webpage.jsx"
 import ResizeSync from './ResizeSync.jsx'
+import { preloadHeroVideo } from './heroVideo.js'
 
 const bgMusicIntro = new Audio("/model/bg-music.MP3")
 const bgMusicLoop = new Audio("/model/bg-loop.MP3")
@@ -208,6 +209,16 @@ function App() {
                     error
                 )
             )
+
+
+        // Start buffering the webpage's hero video now so it's ready
+
+
+        // to play instantly the first time the canvas is minimized.
+
+
+        preloadHeroVideo()
+
 
 
         window.dispatchEvent(
