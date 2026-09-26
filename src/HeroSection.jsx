@@ -56,6 +56,7 @@ const HeroSection = () => {
           muted
           playsInline
           preload="auto"
+          poster="/model/veo3-poster.webp"
           webkit-playsinline="true"
           className="w-full h-full object-cover"
         >

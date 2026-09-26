@@ -8,19 +8,24 @@ import CollapsedSvg from './CollapsedSvg.jsx'
 import ExpandSvg from './ExpandSvg.jsx'
 import Webpage from "./Webpage.jsx"
 import ResizeSync from './ResizeSync.jsx'
+import { getDeviceTier, TIER_SETTINGS } from './utils/deviceTier.js'
+
+const tierSettings = TIER_SETTINGS[getDeviceTier()]
 
 const bgMusicIntro = new Audio("/model/bg-music.MP3")
 const bgMusicLoop = new Audio("/model/bg-loop.MP3")
 
-bgMusicIntro.preload = "auto"
+// Nothing is fetched at page load — these files are large and would
+// compete with the GLB/textures for bandwidth. The intro starts
+// buffering once the starting screen is shown; the loop streams on
+// demand when the intro ends.
+bgMusicIntro.preload = "none"
 bgMusicIntro.loop = false
 bgMusicIntro.volume = 0.3
-bgMusicIntro.load()
 
-bgMusicLoop.preload = "auto"
+bgMusicLoop.preload = "none"
 bgMusicLoop.loop = true
 bgMusicLoop.volume = 0.3
-bgMusicLoop.load()
 
 bgMusicIntro.addEventListener('ended', () => {
     bgMusicLoop.currentTime = 0
@@ -158,6 +163,9 @@ function App() {
 
             setShowLoader(false)
             setShowStartingScreen(true)
+
+            bgMusicIntro.preload = "auto"
+            bgMusicIntro.load()
 
         }
 
@@ -603,9 +611,12 @@ function App() {
                         height:'100%'
                     }}
 
+                    dpr={tierSettings.dpr}
+
                     gl={{
-                        antialias:true,
-                        alpha:false
+                        antialias:tierSettings.antialias,
+                        alpha:false,
+                        powerPreference:'high-performance'
                     }}
 
                 >

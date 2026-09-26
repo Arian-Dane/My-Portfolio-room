@@ -9,15 +9,10 @@ import RiotApiCall from './API/RiotAPI.js'
 import { getDeviceTier, TIER_SETTINGS } from './utils/deviceTier.js'
 import { useRendererStats } from './hooks/useRendererStats.js'
 
-const BAKE_URLS = {
-    bake1: '/model/bake1.webp',
-    bake2: '/model/bake2.webp',
-    bake3: '/model/bake3.webp',
-    bake4: '/model/bake4.webp',
-    bake5: '/model/bake5.webp',
-    bake6: '/model/bake6.webp',
-    bake7: '/model/bake7.webp',
-}
+const BAKE_KEYS = ['bake1', 'bake2', 'bake3', 'bake4', 'bake5', 'bake6', 'bake7']
+
+const bakeUrls = (dir) =>
+    Object.fromEntries(BAKE_KEYS.map((key) => [key, `${dir}/${key}.webp`]))
 
 const EMPTY_HITBOXES = {
     githubHitbox: null,
@@ -80,7 +75,7 @@ export default function Experience({ isVisible = false, onVideosReady, isMinimiz
         if (Vac_Animation) { Vac_Animation.play(); Vac_Animation.timeScale = 0.5 }
     }, [animations])
 
-    const rawTextures = useTexture(BAKE_URLS)
+    const rawTextures = useTexture(useMemo(() => bakeUrls(tierSettings.bakeDir), [tierSettings]))
     const assets = useMemo(() => {
         const maxAniso = gl.capabilities.getMaxAnisotropy()
         const anisotropy = Math.min(maxAniso, tierSettings.maxAnisotropy)
@@ -101,7 +96,7 @@ export default function Experience({ isVisible = false, onVideosReady, isMinimiz
 
     const bakedMaterials = useMemo(() => {
         const materials = {}
-        for (const key of Object.keys(BAKE_URLS)) {
+        for (const key of BAKE_KEYS) {
             materials[key] = new THREE.MeshBasicMaterial({ map: assets[key], toneMapped: false })
         }
         return materials
@@ -114,7 +109,7 @@ export default function Experience({ isVisible = false, onVideosReady, isMinimiz
     }, [bakedMaterials])
 
     useEffect(() => {
-        const makeVideo = (src) => {
+        const makeVideo = (src, preload = 'auto') => {
             const v = document.createElement('video')
             if (src) v.src = src
             v.crossOrigin = 'anonymous'
@@ -124,7 +119,7 @@ export default function Experience({ isVisible = false, onVideosReady, isMinimiz
             v.playsInline = true
             v.setAttribute('playsinline', 'true')
             v.setAttribute('webkit-playsinline', 'true')
-            v.preload = 'auto'
+            v.preload = preload
 
             v.style.position = 'absolute'
             v.style.top = '0'
@@ -149,10 +144,9 @@ export default function Experience({ isVisible = false, onVideosReady, isMinimiz
             return t
         }
 
-        const cyberpunk = makeVideo('/model/cyberpunk.mp4')
-        const arcane = makeVideo('/model/arcane.mp4')
         const idle = makeVideo('/model/leagueScreens/DefeatScreen.mp4')
-        const hero = makeVideo()
+        const cyberpunk = makeVideo('/model/cyberpunk.mp4', 'metadata')
+        const arcane = makeVideo('/model/arcane.mp4', 'metadata')
 
         idle.play().catch((err) => console.warn('idle initial play failed:', err?.name, err?.message))
 
@@ -162,7 +156,7 @@ export default function Experience({ isVisible = false, onVideosReady, isMinimiz
             })
         }
 
-        videoElsRef.current = { cyberpunk, arcane, idle, hero }
+        videoElsRef.current = { cyberpunk, arcane, idle }
         videoTexturesRef.current = {
             cyberpunk: makeVideoTexture(cyberpunk),
             arcane: makeVideoTexture(arcane),
@@ -187,7 +181,7 @@ export default function Experience({ isVisible = false, onVideosReady, isMinimiz
                 settled = true
                 onVideosReadyRef.current?.()
             }
-        }, isMobile ? 6000 : 10000)
+        }, 4000)
 
         criticalVideos.forEach((v) => {
             if (v.readyState >= 3) {
@@ -197,15 +191,14 @@ export default function Experience({ isVisible = false, onVideosReady, isMinimiz
             }
         })
 
-        const loadHeroVideo = () => {
-            if (hero.src) return
-            hero.src = '/model/veo3.mp4'
-            hero.load()
-            hero.play().then(() => hero.pause()).catch(() => {})
+        // Once the idle monitor can play, let the ambient screens buffer so
+        // they're ready by the time the person hits "Wake up".
+        const bufferAmbient = () => {
+            ;[cyberpunk, arcane].forEach((v) => { v.preload = 'auto' })
         }
+        idle.addEventListener('canplay', bufferAmbient, { once: true })
 
         const forcePlayAll = () => {
-            loadHeroVideo()
             ;[cyberpunk, arcane, idle].forEach((v) => {
                 v.play().catch((err) =>
                     console.warn('iOS forced play failed:', v.src, err?.name, err?.message)
@@ -218,6 +211,7 @@ export default function Experience({ isVisible = false, onVideosReady, isMinimiz
             clearTimeout(fallbackTimer)
             window.removeEventListener('user-wakeup', forcePlayAll)
             criticalVideos.forEach((v) => v.removeEventListener('canplay', markReady))
+            idle.removeEventListener('canplay', bufferAmbient)
             Object.values(videoElsRef.current).forEach((v) => {
                 v.pause()
                 v.removeAttribute('src')
@@ -275,7 +269,7 @@ export default function Experience({ isVisible = false, onVideosReady, isMinimiz
                 return
             }
 
-            const bakeKey = Object.keys(BAKE_URLS).find((key) => name.includes(key))
+            const bakeKey = BAKE_KEYS.find((key) => name.includes(key))
             if (bakeKey) {
                 child.material = bakedMaterials[bakeKey]
             }

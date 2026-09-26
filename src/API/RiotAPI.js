@@ -1,6 +1,7 @@
 export default async function RiotApiCall() {
     
     const apiKey = ""
+    if (!apiKey) return null
     const playerURL=`https://americas.api.riotgames.com/riot/account/v1/accounts/by-riot-id/kiwi%20is%20dead/na1?api_key=${apiKey}`
     
     //Fetching player puuid

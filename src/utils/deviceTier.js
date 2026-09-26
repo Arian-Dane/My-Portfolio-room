@@ -31,19 +31,31 @@ export function getDeviceTier() {
 }
 
 export const TIER_SETTINGS = {
+    // bakeDir: half-resolution bakes live in /model/mobile — the full set
+    // (two 4096² + five 2048²) needs ~280MB of GPU memory with mipmaps,
+    // which is enough to stall or crash mobile WebGL.
     low: {
         maxAnisotropy: 1,
         useMipmaps: false,
         playAmbientVideos: false, // only the idle/league monitor plays
+        bakeDir: '/model/mobile',
+        dpr: [1, 1.5],
+        antialias: false,
     },
     mid: {
         maxAnisotropy: 4,
         useMipmaps: true,
         playAmbientVideos: true,
+        bakeDir: '/model/mobile',
+        dpr: [1, 1.75],
+        antialias: true,
     },
     high: {
         maxAnisotropy: 16,
         useMipmaps: true,
         playAmbientVideos: true,
+        bakeDir: '/model',
+        dpr: [1, 2],
+        antialias: true,
     },
 }
