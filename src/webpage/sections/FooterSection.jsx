@@ -1,4 +1,4 @@
-import { GitBranch, Link, Mail, ArrowUp } from "lucide-react";
+import { GitBranch, Link, ArrowUp } from "lucide-react";
 
 const FooterSection = () => {
   return (

@@ -1,17 +1,13 @@
-import "./Webpage.css";
-
-import AboutMePage from "./AboutSection.jsx"
-import CyberNav from "./CyberNav.jsx";
-import HeroSection from "./HeroSection.jsx";
-import Stats from "./StatsSection.tsx"
-import Services from"./ServicesSection.jsx" 
-import Projects from "./ProjectsSection.jsx"
-import Process from "./ProcessSection.tsx"
-import Skills from "./SkillsSection.jsx"
-import TechStack from "./TeckStackSection.jsx"
-import Testimonial from "./TestimonialsSection.jsx"
-import Contact from "./ContactSection.tsx"
-import Footer from "./FooterSection.jsx"
+import AboutMePage from "./sections/AboutSection.jsx"
+import CyberNav from "./sections/CyberNav.jsx";
+import HeroSection from "./sections/HeroSection.jsx";
+import Stats from "./sections/StatsSection.tsx"
+import Services from "./sections/ServicesSection.jsx"
+import Projects from "./sections/ProjectsSection.jsx"
+import Process from "./sections/ProcessSection.tsx"
+import TechStack from "./sections/TechStackSection.jsx"
+import Contact from "./sections/ContactSection.tsx"
+import Footer from "./sections/FooterSection.jsx"
 
 // Reserves the space the real canvas visually occupies. The actual
 // <canvas> is never rendered here — it lives permanently in App, and
@@ -51,9 +47,7 @@ export default function Webpage({
             <Services/>
             <Projects/>
             <Process/>
-            {/* <Skills/> */}
             <TechStack/>
-            {/* <Testimonial/> */}
             <Contact/>
             <Footer/>
         

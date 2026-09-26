@@ -49,7 +49,7 @@ const ProjectsSection = () => {
 
         {/* Project grid */}
         <div className="grid md:grid-cols-2 gap-6">
-          {projects.map((project, i) => (
+          {projects.map((project) => (
             <div
               key={project.title}
               className="group glass-card rounded-xl p-8 hover:neon-glow transition-all duration-500 hover:-translate-y-1"

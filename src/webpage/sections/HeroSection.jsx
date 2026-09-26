@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import { GitBranch, Link2, Mail, ArrowDown } from "lucide-react";
-import { getHeroVideo } from "./heroVideo.js";
+import { getHeroVideo } from "../heroVideo.js";
 
 const socialLinks = [
   { icon: GitBranch, href: "https://github.com/", label: "GitHub" },

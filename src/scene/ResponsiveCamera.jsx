@@ -10,7 +10,8 @@ const DESKTOP_FOV = 31
 const MOBILE_PULLBACK = 8
 const MOBILE_MINIMIZED_PULLBACK = 8
 
-export default function CameraControls({ isMobile = false, isMinimized = false }) {
+// Widens the FOV and pulls the camera back on phones so the room fits.
+export default function ResponsiveCamera({ isMobile = false, isMinimized = false }) {
     const { camera } = useThree()
 
     // only relevant when isMobile is true — desktop ignores isMinimized

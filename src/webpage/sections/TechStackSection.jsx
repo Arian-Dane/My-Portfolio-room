@@ -36,13 +36,13 @@ const TechStackSection = () => {
         </div>
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {techCategories.map((cat, ci) => (
+          {techCategories.map((cat) => (
             <div key={cat.title} className="glass-card rounded-xl p-6 group hover:neon-glow-purple transition-all duration-500">
               <h3 className="font-display text-[10px] tracking-[0.3em] uppercase text-accent/60 mb-5 text-center">
                 {cat.title}
               </h3>
               <div className="space-y-2">
-                {cat.items.map((item, i) => (
+                {cat.items.map((item) => (
                   <div
                     key={item}
                     className="flex items-center gap-3 py-2 px-3 rounded-lg hover:bg-accent/5 transition-colors duration-300 group/item"

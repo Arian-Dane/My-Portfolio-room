@@ -1,6 +1,5 @@
 import { useProgress } from "@react-three/drei"
 import './Loader.css'
-import "./index.css"
 import { useEffect } from 'react'
 
 export default function Loader({ onComplete }) {

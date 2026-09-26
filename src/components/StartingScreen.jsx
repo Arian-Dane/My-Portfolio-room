@@ -1,6 +1,5 @@
 import { Volume2, VolumeX } from "lucide-react"
 import "./StartingScreen.css"
-import "./index.css"
 
 export default function StartingScreen({ onWakeUp, isMuted, onToggleMute }) {
   return (

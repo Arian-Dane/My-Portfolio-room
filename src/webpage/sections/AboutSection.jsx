@@ -1,4 +1,4 @@
-import { Terminal, Shield, Cpu, Zap, Code2, Braces } from "lucide-react";
+import { Shield, Cpu, Zap, Code2, Braces } from "lucide-react";
 import "./AboutSection.css"
 
 const timeline = [
@@ -9,7 +9,6 @@ const timeline = [
 ];
 
 const traits = [
-  // { icon: Terminal, label: "CLI Enthusiast" },
   { icon: Shield, label: "Security Minded" },
   { icon: Cpu, label: "Performance" },
   { icon: Zap, label: "Fast Learner" },

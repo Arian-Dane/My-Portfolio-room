@@ -3,12 +3,16 @@
 // and caps out at 8, hardwareConcurrency can lie on some mobile browsers),
 // but combined they're a decent proxy for "should we spend less GPU/decode
 // budget here."
+export function isMobileDevice() {
+    return typeof navigator !== 'undefined' && /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
+}
+
 export function getDeviceTier() {
     if (typeof navigator === 'undefined') return 'high'
 
     const memory = navigator.deviceMemory // GB, undefined on Safari/Firefox
     const cores = navigator.hardwareConcurrency
-    const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
+    const isMobile = isMobileDevice()
 
     let score = 0
 
