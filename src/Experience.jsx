@@ -305,10 +305,18 @@ export default function Experience({ isVisible = false, onVideosReady, isMinimiz
         }
     }, [isVisible, isMinimized, tierSettings.playAmbientVideos])
 
+    // Pause the league monitor while minimized so it doesn't hog the
+    // decoder the webpage's hero video needs.
+    const isMinimizedRef = useRef(isMinimized)
     useEffect(() => {
+        isMinimizedRef.current = isMinimized
         const idle = videoElsRef.current.idle
         if (!idle) return
-        idle.play().catch((err) => console.warn('idle re-play on minimize toggle failed:', err?.name, err?.message))
+        if (isMinimized) {
+            idle.pause()
+        } else {
+            idle.play().catch((err) => console.warn('idle re-play on minimize toggle failed:', err?.name, err?.message))
+        }
     }, [isMinimized])
 
     useEffect(() => {
@@ -317,6 +325,7 @@ export default function Experience({ isVisible = false, onVideosReady, isMinimiz
         idle.src = matchOutcome
             ? '/model/leagueScreens/VictoryScreen.mp4'
             : '/model/leagueScreens/DefeatScreen.mp4'
+        if (isMinimizedRef.current) return
         idle.play().catch((err) => console.warn('idle swap play failed:', err?.name, err?.message))
     }, [matchOutcome])
 
