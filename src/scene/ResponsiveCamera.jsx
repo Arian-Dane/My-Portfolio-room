@@ -1,7 +1,7 @@
 import { useThree } from '@react-three/fiber'
 import { useEffect } from 'react'
 
-const MOBILE_FOV = 68
+const MOBILE_FOV = 66
 const MOBILE_MINIMIZED_FOV = 35
 const DESKTOP_FOV = 31
 

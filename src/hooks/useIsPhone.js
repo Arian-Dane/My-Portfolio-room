@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 
-const PHONE_MAX_WIDTH = 430
+const PHONE_MAX_WIDTH = 966
 
 const checkIsPhone = () => window.innerWidth <= PHONE_MAX_WIDTH
 
